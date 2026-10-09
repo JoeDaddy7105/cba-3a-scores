@@ -17,7 +17,7 @@ Built around Standley Lake HS, but the focus school and class are settings in `c
 | `data/school_aliases.csv` | Fixes name variations ("Wheat Ridge" vs "Wheat Ridge HS"). |
 | `powerbi/queries.pq`, `powerbi/measures.dax` | Power Query and DAX to paste into Power BI. |
 | `.github/workflows/update-scores.yml` | Runs `update.py` on a schedule in GitHub and commits new data. |
-| `notify.py` | Sends a phone alert (ntfy) after a run that found new scores. |
+| `notify.py` | Sends alerts (GitHub issue comment, optional Discord/Telegram) after a run that found new scores. |
 | `run_update.bat` | Same thing for Windows Task Scheduler if you'd rather run it at home. |
 
 ## First run
@@ -67,18 +67,23 @@ seed data gets replaced automatically as the scraper picks things up.
 and point Power BI at the CSVs through the SharePoint/OneDrive connector (see the bottom of
 `queries.pq`). A plain local folder path works in Desktop but needs a gateway for Service refresh.
 
-## Phone alerts
+## Alerts when new scores post
 
-When a run finds new scores, `notify.py` sends a push alert through [ntfy](https://ntfy.sh), a free
-notification service. The alert says which show posted, Standley Lake's latest score and rank, the
-State and finals odds (and how they moved), and other new 3A scores. Tapping it opens the dashboard.
+After a run that finds new scores, `notify.py` sends a short alert: which show posted, Standley
+Lake's latest score and rank, the State and finals odds (and how they moved), other new 3A scores,
+and a link to the dashboard.
 
-To subscribe: install the ntfy app (iPhone or Android), tap **+**, and enter the topic from
-`config.json` (`notify.ntfy_topic`). You can also open `https://ntfy.sh/<topic>` in a browser.
-Anyone with the topic name can subscribe, so you can share it with other parents.
+* **GitHub (on by default).** The workflow comments on the open **Score alerts** issue in this
+  repo. GitHub emails you because you watch your own repo, and the GitHub mobile app pushes it.
+  Anyone with a GitHub account can click **Subscribe** on that issue to get the same emails.
+  Check Settings > Notifications on github.com if the emails don't show up.
+* **Discord (optional).** In a Discord channel: Edit Channel > Integrations > Webhooks > New Webhook >
+  Copy URL. In this repo: Settings > Secrets and variables > Actions > New repository secret,
+  name `DISCORD_WEBHOOK_URL`, paste the URL. Good for a band-parent server.
+* **Telegram (optional).** Make a bot with @BotFather, then add secrets `TELEGRAM_BOT_TOKEN` and
+  `TELEGRAM_CHAT_ID`.
 
-To send a test alert, push any commit with `[notify-test]` in the message, or run
-`python notify.py --test` locally. To change the topic privately, add a repo secret named `NTFY_TOPIC`.
+To send a test alert, push any commit with `[notify-test]` in the message.
 
 ## Suggested Power BI pages
 
