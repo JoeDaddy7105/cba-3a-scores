@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+data/pdf_cache/
+data/update_log.txt
+.DS_Store

@@ -1,0 +1,45 @@
+{
+  "run_at": "2026-10-09T13:06:21",
+  "as_of": "2026-10-09",
+  "calibration": {
+    "rate": 0.2657,
+    "d0": 3,
+    "s0": 2.316,
+    "s1": 0.0068,
+    "n_pairs": 28,
+    "resid_sd": 2.318,
+    "fallback": false
+  },
+  "season_shift": -1.36,
+  "yoy_sd": 3.0,
+  "config": {
+    "season": 2026,
+    "focus_school": "Standley Lake HS",
+    "focus_class": "3A",
+    "score_pages": {
+      "2026": "https://www.coloradomarching.org/scores",
+      "2025": "https://www.coloradomarching.org/copy-of-scores-1",
+      "2024": "https://www.coloradomarching.org/copy-of-scores"
+    },
+    "state_semis_date": "2026-10-26",
+    "regional_dates": {
+      "Northern": "2026-10-12",
+      "Metro": "2026-10-13",
+      "Southern": "2026-10-14",
+      "Western": "2026-10-15"
+    },
+    "state_spots_by_region": {
+      "Metro": 5,
+      "Southern": 3,
+      "Western": 1,
+      "Northern": 1
+    },
+    "finals_spots": 4,
+    "simulations": 20000,
+    "qualifying_mode": "statewide",
+    "state_qualifiers": 10,
+    "class_size": 13,
+    "focus_regional_time": "5:31 PM",
+    "_notes": "2026 CBA classification: 3A has 13 bands, 10 qualify for State, 4 in finals. Rules 5.03/5.05 say qualifiers are picked from regional scores, and 2024-25 results match a statewide top-N by regional score, so qualifying_mode='statewide'. Set it to 'by_region' to use state_spots_by_region instead."
+  }
+}

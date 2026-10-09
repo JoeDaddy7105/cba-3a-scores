@@ -1,0 +1,37 @@
+// DAX measures. Create them on the Scores table unless noted.
+// Slicers to add: Scores[season], Scores[class] (set to 3A), Scores[school].
+
+Focus School = "Standley Lake HS"
+
+Score = AVERAGE ( Scores[total] )
+
+Latest Score =
+VAR lastDate = CALCULATE ( MAX ( Scores[event_date] ) )
+RETURN CALCULATE ( MAX ( Scores[total] ), Scores[event_date] = lastDate )
+
+Change vs Prior Show =
+VAR lastDate = CALCULATE ( MAX ( Scores[event_date] ) )
+VAR prevDate = CALCULATE ( MAX ( Scores[event_date] ), Scores[event_date] < lastDate )
+VAR lastScore = CALCULATE ( MAX ( Scores[total] ), Scores[event_date] = lastDate )
+VAR prevScore = CALCULATE ( MAX ( Scores[total] ), Scores[event_date] = prevDate )
+RETURN IF ( NOT ISBLANK ( prevScore ), lastScore - prevScore )
+
+// Rank of each band's latest score within the class (use in a table with school on rows)
+Rank Last Known =
+RANKX (
+    ALLSELECTED ( Scores[school] ),
+    [Latest Score], , DESC, Dense
+)
+
+// Highlight the focus band in visuals: Format > Bars/Lines > Color > fx > Field value
+Focus Color =
+IF ( SELECTEDVALUE ( Scores[school] ) = [Focus School], "#2A78D6", "#B9BEB4" )
+
+// ---- Projections table measures
+P State = MAX ( Projections[p_state] )
+P Finals = MAX ( Projections[p_finals] )
+Projected Semis = MAX ( Projections[proj_semis] )
+
+// ---- WeeklySnapshot table: line chart X = week_ending, Y = this, Legend = school
+Last Known Score = MAX ( WeeklySnapshot[last_known_score] )
+Weekly Rank = MIN ( WeeklySnapshot[rank_last_known] )

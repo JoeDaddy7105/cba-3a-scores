@@ -1,0 +1,440 @@
+<title>3A Marching Score Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single scoreboard column. Headline numbers for the focus band, then
+   the 3A field, the season trend, the odds with live what-if controls, and method notes. */
+:root {
+  --bg: #f4f6f2;
+  --surface: #fdfdfb;
+  --ink: #111511;
+  --ink-2: #4c524b;
+  --muted: #858b82;
+  --grid: #e1e4dc;
+  --axis: #c2c7bc;
+  --line: rgba(17,21,17,0.10);
+  --focus: #2a78d6;        /* the focus band (categorical slot 1) */
+  --y2025: #eb6834;        /* slot 2 */
+  --y2024: #1baf7a;        /* slot 3 */
+  --other: #b9beb4;        /* context bands */
+  --good: #0ca30c; --warn: #fab219; --crit: #d03b3b;
+  --good-ink: #006300;
+  --chip: #e9ece5;
+  --f-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f110f; --surface: #191c18; --ink: #f4f6f1; --ink-2: #c2c7bb; --muted: #8b9187;
+  --grid: #2a2e28; --axis: #3a3f37; --line: rgba(255,255,255,0.10);
+  --focus: #3987e5; --y2025: #d95926; --y2024: #199e70; --other: #50564d; --chip: #252923;
+  --good-ink: #0ca30c; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f110f; --surface: #191c18; --ink: #f4f6f1; --ink-2: #c2c7bb; --muted: #8b9187;
+  --grid: #2a2e28; --axis: #3a3f37; --line: rgba(255,255,255,0.10);
+  --focus: #3987e5; --y2025: #d95926; --y2024: #199e70; --other: #50564d; --chip: #252923;
+  --good-ink: #0ca30c; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 700; letter-spacing: 0.01em; margin: 0; text-wrap: balance; line-height: 1.05; }
+h1 { font-size: clamp(2.1rem, 6vw, 3.4rem); text-transform: uppercase; }
+h2 { font-size: 1.6rem; text-transform: uppercase; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font: 600 0.78rem/1 var(--f-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); }
+.sub { color: var(--ink-2); }
+.mono { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+
+header.top { display: grid; gap: 10px; border-bottom: 3px solid var(--ink); padding-bottom: 18px; }
+header.top .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--ink-2); font-size: 0.86rem; }
+
+.board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); }
+.board > div { padding: 16px 18px; display: grid; gap: 4px; align-content: start; border-right: 1px solid var(--line); min-width: 0; }
+.board > div:last-child { border-right: 0; }
+.board .v { font: 700 2.6rem/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.board .n { font-size: 0.84rem; color: var(--ink-2); }
+@media (max-width: 720px) {
+  .board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .board > div:nth-child(2) { border-right: 0; }
+  .board > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+}
+
+section.panel { background: var(--surface); border: 1px solid var(--line); padding: 20px; display: grid; gap: 14px; min-width: 0; }
+.panel-head { display: grid; gap: 6px; }
+.chart { width: 100%; min-width: 0; position: relative; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.84rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.sw.dash { background: repeating-linear-gradient(90deg, var(--focus) 0 4px, transparent 4px 7px) !important; }
+.note { font-size: 0.82rem; color: var(--muted); }
+
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--surface); font: 500 0.8rem/1.35 var(--f-body);
+  padding: 7px 9px; border-radius: 4px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); z-index: 5; }
+.tip b { font-family: var(--f-data); font-weight: 500; }
+
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; }
+@media (max-width: 820px) { .two { grid-template-columns: minmax(0, 1fr); } }
+
+.controls { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: end; padding: 14px; background: var(--chip); }
+.ctl { display: grid; gap: 6px; font-size: 0.84rem; color: var(--ink-2); }
+.ctl label { font-weight: 600; color: var(--ink); }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--axis); background: var(--surface); }
+.stepper button { width: 34px; height: 32px; border: 0; background: transparent; color: var(--ink); font: 600 1.1rem var(--f-body); cursor: pointer; }
+.stepper button:hover { background: var(--chip); }
+.stepper output { min-width: 34px; text-align: center; font: 600 1rem var(--f-data); }
+.field-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chipbtn { border: 1px solid var(--axis); background: var(--surface); color: var(--ink); padding: 4px 10px; font: 500 0.8rem var(--f-body); cursor: pointer; border-radius: 999px; }
+.chipbtn[aria-pressed="false"] { color: var(--muted); text-decoration: line-through; background: transparent; }
+button:focus-visible, .chipbtn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 0.88rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--grid); vertical-align: middle; }
+th { font: 600 0.74rem var(--f-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); border-bottom: 2px solid var(--axis); }
+td.num, th.num { text-align: right; font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+tr.is-focus td { background: color-mix(in srgb, var(--focus) 10%, transparent); font-weight: 600; }
+.pbar { display: grid; grid-template-columns: 54px minmax(60px, 1fr); align-items: center; gap: 8px; }
+.pbar .track { height: 8px; background: var(--grid); border-radius: 4px; overflow: hidden; }
+.pbar .fill { height: 100%; background: var(--focus); border-radius: 0 4px 4px 0; }
+tr:not(.is-focus) .pbar .fill { background: var(--ink-2); }
+.basis { display: inline-block; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--ink-2); white-space: nowrap; }
+.basis.carry { border: 1px dashed var(--axis); background: transparent; }
+@media (max-width: 640px) {
+  table { min-width: 0; font-size: 0.82rem; }
+  th, td { padding: 7px 5px; }
+  .hide-sm { display: none; }
+  .pbar { grid-template-columns: auto; }
+  .pbar .track { display: none; }
+}
+
+.notes { display: grid; gap: 10px; font-size: 0.9rem; color: var(--ink-2); }
+.notes ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 6px; }
+.notes a { color: var(--focus); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">CBA Marching · Class 3A · <span id="season"></span> season</div>
+    <h1 id="title">3A Score Tracker</h1>
+    <p class="sub" id="lede"></p>
+    <div class="meta"><span id="asof"></span><span id="nextup"></span></div>
+  </header>
+
+  <div class="board" id="board"></div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Where the 3A field stands</h2>
+      <p class="sub">Each band's most recent score this season. Bands go to different shows with different judges, so treat gaps under about two points as a toss-up.</p>
+    </div>
+    <div class="chart" id="latest"></div>
+    <p class="note" id="unscored"></p>
+  </section>
+
+  <div class="two">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Week by week</h2>
+        <p class="sub">Last known score for every 3A band as of each Saturday. A line stays flat until that band competes again.</p>
+      </div>
+      <div class="chart" id="weekly"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-head">
+        <h2><span class="focusname"></span> by season</h2>
+        <p class="sub">Scores lined up by days before State semifinals, with this year's projected path.</p>
+      </div>
+      <div class="legend" id="trendlegend"></div>
+      <div class="chart" id="trend"></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Odds of State and finals</h2>
+      <p class="sub">The season replayed <span id="nsims"></span> times: draw a score for every band, send the top regional scores to State, then the top bands at semifinals to finals. Change the assumptions to see how the odds move.</p>
+    </div>
+    <div class="controls">
+      <div class="ctl"><label for="metroOut">3A bands that qualify for State</label>
+        <div class="stepper"><button type="button" id="metroDown" aria-label="One fewer State spot">−</button><output id="metroOut">10</output><button type="button" id="metroUp" aria-label="One more State spot">+</button></div></div>
+      <div class="ctl"><label for="finOut">3A finals spots</label>
+        <div class="stepper"><button type="button" id="finDown" aria-label="One fewer finals spot">−</button><output id="finOut">4</output><button type="button" id="finUp" aria-label="One more finals spot">+</button></div></div>
+      <div class="ctl" style="min-width:0;flex:1 1 280px"><label>Bands in the 3A field (tap one to see the odds without it)</label>
+        <div class="field-chips" id="chips"></div></div>
+    </div>
+    <div class="tablewrap"><table id="odds"></table></div>
+    <p class="note">Projected semis is the middle estimate; the range covers about two thirds of outcomes. Bands marked * have no score yet this year, so their projection starts from last year's semifinals (or regional) score and carries a wider range.</p>
+  </section>
+
+  <section class="panel notes">
+    <h2>How this works</h2>
+    <ul id="method"></ul>
+    <p class="note">Scores from the CBA recap PDFs at <a href="https://www.coloradomarching.org/scores">coloradomarching.org/scores</a>. Rules on qualification: CBA Marching Band Procedures and Policies, sections 5.03 and 5.06.</p>
+  </section>
+</div>
+
+<script>
+const DATA = {"info": {"run_at": "2026-10-09T13:06:21", "as_of": "2026-10-09", "calibration": {"rate": 0.2657, "d0": 3, "s0": 2.316, "s1": 0.0068, "n_pairs": 28, "resid_sd": 2.318, "fallback": false}, "season_shift": -1.36, "yoy_sd": 3.0, "config": {"season": 2026, "focus_school": "Standley Lake HS", "focus_class": "3A", "score_pages": {"2026": "https://www.coloradomarching.org/scores", "2025": "https://www.coloradomarching.org/copy-of-scores-1", "2024": "https://www.coloradomarching.org/copy-of-scores"}, "state_semis_date": "2026-10-26", "regional_dates": {"Northern": "2026-10-12", "Metro": "2026-10-13", "Southern": "2026-10-14", "Western": "2026-10-15"}, "state_spots_by_region": {"Metro": 5, "Southern": 3, "Western": 1, "Northern": 1}, "finals_spots": 4, "simulations": 20000, "qualifying_mode": "statewide", "state_qualifiers": 10, "class_size": 13, "focus_regional_time": "5:31 PM", "_notes": "2026 CBA classification: 3A has 13 bands, 10 qualify for State, 4 in finals. Rules 5.03/5.05 say qualifiers are picked from regional scores, and 2024-25 results match a statewide top-N by regional score, so qualifying_mode='statewide'. Set it to 'by_region' to use state_spots_by_region instead."}}, "scores": [{"season": 2024, "event": "CBA North Regional", "event_date": "2024-10-14", "round": "Regional", "school": "Windsor HS", "total": 66.45, "class_place": 1, "source": "manual"}, {"season": 2024, "event": "CBA North Regional", "event_date": "2024-10-14", "round": "Regional", "school": "Roosevelt HS", "total": 55.6, "class_place": 2, "source": "manual"}, {"season": 2024, "event": "CBA Southern Regional", "event_date": "2024-10-16", "round": "Regional", "school": "Pueblo County HS", "total": 73.95, "class_place": 1, "source": "manual"}, {"season": 2024, "event": "CBA Southern Regional", "event_date": "2024-10-16", "round": "Regional", "school": "Canon City HS", "total": 61.0, "class_place": 2, "source": "manual"}, {"season": 2024, "event": "CBA Southern Regional", "event_date": "2024-10-16", "round": "Regional", "school": "Harrison HS", "total": 58.35, "class_place": 3, "source": "manual"}, {"season": 2024, "event": "CBA Southern Regional", "event_date": "2024-10-16", "round": "Regional", "school": "Pueblo Central", "total": 51.75, "class_place": 4, "source": "manual"}, {"season": 2024, "event": "CBA Southern Regional", "event_date": "2024-10-16", "round": "Regional", "school": "Pueblo East HS", "total": 51.3, "class_place": 5, "source": "manual"}, {"season": 2024, "event": "CBA Southern Regional", "event_date": "2024-10-16", "round": "Regional", "school": "Pueblo South HS", "total": 47.65, "class_place": 6, "source": "manual"}, {"season": 2024, "event": "CBA West Regional", "event_date": "2024-10-17", "round": "Regional", "school": "Palisade HS", "total": 60.7, "class_place": 1, "source": "manual"}, {"season": 2024, "event": "CBA State 1A-2A-3A Finals", "event_date": "2024-10-28", "round": "State Finals", "school": "D'Evelyn HS", "total": 78.65, "class_place": 1, "source": "manual"}, {"season": 2024, "event": "CBA State 1A-2A-3A Finals", "event_date": "2024-10-28", "round": "State Finals", "school": "Littleton HS", "total": 77.8, "class_place": 2, "source": "manual"}, {"season": 2024, "event": "CBA State 1A-2A-3A Finals", "event_date": "2024-10-28", "round": "State Finals", "school": "Pueblo County HS", "total": 76.7, "class_place": 3, "source": "manual"}, {"season": 2024, "event": "CBA State 1A-2A-3A Finals", "event_date": "2024-10-28", "round": "State Finals", "school": "Windsor HS", "total": 74.05, "class_place": 4, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "D'Evelyn HS", "total": 78.7, "class_place": 1, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "Littleton HS", "total": 78.05, "class_place": 2, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "Pueblo County HS", "total": 77.0, "class_place": 3, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "Windsor HS", "total": 72.7, "class_place": 4, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "Evergreen HS", "total": 72.35, "class_place": 5, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "Palisade HS", "total": 67.85, "class_place": 6, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "Standley Lake HS", "total": 66.95, "class_place": 7, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "Canon City HS", "total": 65.9, "class_place": 8, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "Green Mountain HS", "total": 61.45, "class_place": 9, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "Harrison HS", "total": 61.0, "class_place": 10, "source": "manual"}, {"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "school": "Roosevelt HS", "total": 58.25, "class_place": 11, "source": "manual"}, {"season": 2025, "event": "Legend Marching Invitational", "event_date": "2025-09-20", "round": "Prelims", "school": "Pueblo County HS", "total": 66.6, "class_place": 1, "source": "manual"}, {"season": 2025, "event": "Fossil Ridge Marching Festival", "event_date": "2025-09-20", "round": "Prelims", "school": "Windsor HS", "total": 59.35, "class_place": 2, "source": "manual"}, {"season": 2025, "event": "Legend Marching Invitational", "event_date": "2025-09-20", "round": "Prelims", "school": "Green Mountain HS", "total": 55.625, "class_place": 3, "source": "manual"}, {"season": 2025, "event": "Legacy Marching Festival", "event_date": "2025-09-27", "round": "Prelims", "school": "D'Evelyn HS", "total": 63.9, "class_place": 1, "source": "manual"}, {"season": 2025, "event": "Colorado West Festival", "event_date": "2025-09-27", "round": "Prelims", "school": "Palisade HS", "total": 61.75, "class_place": 2, "source": "manual"}, {"season": 2025, "event": "Legacy Marching Festival", "event_date": "2025-09-27", "round": "Prelims", "school": "Evergreen HS", "total": 61.2, "class_place": 3, "source": "manual"}, {"season": 2025, "event": "Legacy Marching Festival", "event_date": "2025-09-27", "round": "Prelims", "school": "Harrison HS", "total": 56.7, "class_place": 4, "source": "manual"}, {"season": 2025, "event": "Douglas County Invitational", "event_date": "2025-10-04", "round": "Prelims", "school": "D'Evelyn HS", "total": 68.85, "class_place": 1, "source": "manual"}, {"season": 2025, "event": "Big Cat Marching Festival", "event_date": "2025-10-04", "round": "Prelims", "school": "Windsor HS", "total": 68.15, "class_place": 2, "source": "manual"}, {"season": 2025, "event": "Big Cat Marching Festival", "event_date": "2025-10-04", "round": "Prelims", "school": "Standley Lake HS", "total": 64.3, "class_place": 3, "source": "manual"}, {"season": 2025, "event": "Big Cat Marching Festival", "event_date": "2025-10-04", "round": "Prelims", "school": "Evergreen HS", "total": 58.9, "class_place": 4, "source": "manual"}, {"season": 2025, "event": "Douglas County Invitational", "event_date": "2025-10-04", "round": "Prelims", "school": "Green Mountain HS", "total": 57.25, "class_place": 5, "source": "manual"}, {"season": 2025, "event": "Harrison Invitational", "event_date": "2025-10-11", "round": "Prelims", "school": "Canon City HS", "total": 62.25, "class_place": 1, "source": "manual"}, {"season": 2025, "event": "Harrison Invitational", "event_date": "2025-10-11", "round": "Prelims", "school": "Pueblo Central", "total": 57.65, "class_place": 2, "source": "manual"}, {"season": 2025, "event": "Metro 2A-4A Regional", "event_date": "2025-10-14", "round": "Regional", "school": "D'Evelyn HS", "total": 69.8, "class_place": 1, "source": "manual"}, {"season": 2025, "event": "Metro 2A-4A Regional", "event_date": "2025-10-14", "round": "Regional", "school": "Standley Lake HS", "total": 68.85, "class_place": 2, "source": "manual"}, {"season": 2025, "event": "Metro 2A-4A Regional", "event_date": "2025-10-14", "round": "Regional", "school": "Evergreen HS", "total": 64.65, "class_place": 3, "source": "manual"}, {"season": 2025, "event": "Metro 2A-4A Regional", "event_date": "2025-10-14", "round": "Regional", "school": "Green Mountain HS", "total": 60.65, "class_place": 4, "source": "manual"}, {"season": 2025, "event": "Metro 2A-4A Regional", "event_date": "2025-10-14", "round": "Regional", "school": "Wheat Ridge HS", "total": 57.35, "class_place": 5, "source": "manual"}, {"season": 2025, "event": "Southern Regional", "event_date": "2025-10-15", "round": "Regional", "school": "Pueblo County HS", "total": 70.55, "class_place": 1, "source": "manual"}, {"season": 2025, "event": "Southern Regional", "event_date": "2025-10-15", "round": "Regional", "school": "Harrison HS", "total": 64.8, "class_place": 2, "source": "manual"}, {"season": 2025, "event": "Southern Regional", "event_date": "2025-10-15", "round": "Regional", "school": "Canon City HS", "total": 63.35, "class_place": 3, "source": "manual"}, {"season": 2025, "event": "Southern Regional", "event_date": "2025-10-15", "round": "Regional", "school": "Pueblo Central", "total": 57.1, "class_place": 4, "source": "manual"}, {"season": 2025, "event": "Southern Regional", "event_date": "2025-10-15", "round": "Regional", "school": "Pueblo East HS", "total": 49.2, "class_place": 5, "source": "manual"}, {"season": 2025, "event": "Western Regional", "event_date": "2025-10-16", "round": "Regional", "school": "Palisade HS", "total": 67.4, "class_place": 1, "source": "manual"}, {"season": 2025, "event": "CBA State 1A-2A-3A Finals", "event_date": "2025-10-27", "round": "State Finals", "school": "Pueblo County HS", "total": 76.55, "class_place": 1, "source": "manual"}, {"season": 2025, "event": "CBA State 1A-2A-3A Finals", "event_date": "2025-10-27", "round": "State Finals", "school": "D'Evelyn HS", "total": 75.4, "class_place": 2, "source": "manual"}, {"season": 2025, "event": "CBA State 1A-2A-3A Finals", "event_date": "2025-10-27", "round": "State Finals", "school": "Windsor HS", "total": 74.1, "class_place": 3, "source": "manual"}, {"season": 2025, "event": "CBA State 1A-2A-3A Finals", "event_date": "2025-10-27", "round": "State Finals", "school": "Palisade HS", "total": 72.05, "class_place": 4, "source": "manual"}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "school": "Pueblo County HS", "total": 74.75, "class_place": 1, "source": "manual"}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "school": "D'Evelyn HS", "total": 73.5, "class_place": 2, "source": "manual"}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "school": "Windsor HS", "total": 72.3, "class_place": 3, "source": "manual"}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "school": "Palisade HS", "total": 70.9, "class_place": 4, "source": "manual"}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "school": "Standley Lake HS", "total": 68.3, "class_place": 5, "source": "manual"}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "school": "Evergreen HS", "total": 66.65, "class_place": 6, "source": "manual"}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "school": "Harrison HS", "total": 64.4, "class_place": 7, "source": "manual"}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "school": "Canon City HS", "total": 63.4, "class_place": 8, "source": "manual"}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "school": "Green Mountain HS", "total": 61.05, "class_place": 9, "source": "manual"}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "school": "Wheat Ridge HS", "total": 57.3, "class_place": 10, "source": "manual"}, {"season": 2026, "event": "Legend Marching Festival", "event_date": "2026-09-19", "round": "Prelims", "school": "Standley Lake HS", "total": 57.4, "class_place": 1, "source": "manual"}, {"season": 2026, "event": "Legend Marching Festival", "event_date": "2026-09-19", "round": "Prelims", "school": "Evergreen HS", "total": 55.4, "class_place": 2, "source": "manual"}, {"season": 2026, "event": "Legend Marching Festival", "event_date": "2026-09-19", "round": "Prelims", "school": "Green Mountain HS", "total": 53.65, "class_place": 3, "source": "manual"}, {"season": 2026, "event": "Legend Marching Festival", "event_date": "2026-09-19", "round": "Prelims", "school": "Pueblo Central", "total": 48.6, "class_place": 4, "source": "manual"}, {"season": 2026, "event": "Colorado West Festival", "event_date": "2026-09-26", "round": "Finals", "school": "Palisade HS", "total": 61.5, "class_place": 1, "source": "manual"}, {"season": 2026, "event": "Colorado West Festival", "event_date": "2026-09-26", "round": "Prelims", "school": "Palisade HS", "total": 62.05, "class_place": 1, "source": "manual"}, {"season": 2026, "event": "Legacy Marching Festival", "event_date": "2026-09-26", "round": "Prelims", "school": "D'Evelyn HS", "total": 58.25, "class_place": 2, "source": "manual"}, {"season": 2026, "event": "Legacy Marching Festival", "event_date": "2026-09-26", "round": "Prelims", "school": "Harrison HS", "total": 53.3, "class_place": 3, "source": "manual"}, {"season": 2026, "event": "DCMI Marching Festival", "event_date": "2026-10-03", "round": "Finals", "school": "D'Evelyn HS", "total": 67.7, "class_place": 1, "source": "manual"}, {"season": 2026, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "round": "Finals", "school": "Windsor HS", "total": 64.8, "class_place": 2, "source": "manual"}, {"season": 2026, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "round": "Finals", "school": "Standley Lake HS", "total": 63.95, "class_place": 3, "source": "manual"}, {"season": 2026, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "round": "Finals", "school": "Conifer HS", "total": 55.7, "class_place": 4, "source": "manual"}, {"season": 2026, "event": "DCMI Marching Festival", "event_date": "2026-10-03", "round": "Prelims", "school": "D'Evelyn HS", "total": 66.05, "class_place": 1, "source": "manual"}, {"season": 2026, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "round": "Prelims", "school": "Windsor HS", "total": 65.1, "class_place": 2, "source": "manual"}, {"season": 2026, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "round": "Prelims", "school": "Evergreen HS", "total": 64.6, "class_place": 3, "source": "manual"}, {"season": 2026, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "round": "Prelims", "school": "Standley Lake HS", "total": 64.25, "class_place": 4, "source": "manual"}, {"season": 2026, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "round": "Prelims", "school": "Conifer HS", "total": 54.55, "class_place": 5, "source": "manual"}], "projections": [{"school": "Pueblo County HS", "region": "Southern", "basis": "last season", "last_score": "", "last_event": "", "last_date": "", "proj_semis": 73.39392631619926, "proj_sd": 3.7899678098896827, "p_state": 0.99945, "p_finals": 0.9125, "p_first": 0.5853, "median_semis_rank": 1.0, "p_state_if_one_fewer_spot": 0.9986}, {"school": "Windsor HS", "region": "Northern", "basis": "this season", "last_score": 64.8, "last_event": "Lakewood Marching Festival", "last_date": "2026-10-03", "proj_semis": 70.264, "proj_sd": 2.4724, "p_state": 0.99935, "p_finals": 0.7786, "p_first": 0.13925, "median_semis_rank": 3.0, "p_state_if_one_fewer_spot": 0.9975}, {"school": "D'Evelyn HS", "region": "Metro", "basis": "this season", "last_score": 67.7, "last_event": "DCMI Marching Festival", "last_date": "2026-10-03", "proj_semis": 69.99093431152954, "proj_sd": 2.4724, "p_state": 0.99955, "p_finals": 0.7498, "p_first": 0.1287, "median_semis_rank": 3.0, "p_state_if_one_fewer_spot": 0.99755}, {"school": "Palisade HS", "region": "Western", "basis": "this season", "last_score": 61.5, "last_event": "Colorado West Festival", "last_date": "2026-09-26", "proj_semis": 68.9489, "proj_sd": 2.52, "p_state": 0.9991, "p_finals": 0.6006, "p_first": 0.0695, "median_semis_rank": 4.0, "p_state_if_one_fewer_spot": 0.996}, {"school": "Standley Lake HS", "region": "Metro", "basis": "this season", "last_score": 63.95, "last_event": "Lakewood Marching Festival", "last_date": "2026-10-03", "proj_semis": 68.46999824909292, "proj_sd": 2.4724, "p_state": 0.99795, "p_finals": 0.5275, "p_first": 0.0514, "median_semis_rank": 4.0, "p_state_if_one_fewer_spot": 0.9914}, {"school": "Evergreen HS", "region": "Metro", "basis": "this season", "last_score": 64.6, "last_event": "Lakewood Marching Festival", "last_date": "2026-10-03", "proj_semis": 67.27737796897155, "proj_sd": 2.4724, "p_state": 0.99405, "p_finals": 0.3454, "p_first": 0.02255, "median_semis_rank": 5.0, "p_state_if_one_fewer_spot": 0.98075}, {"school": "Green Mountain HS", "region": "Metro", "basis": "this season", "last_score": 53.65, "last_event": "Legend Marching Festival", "last_date": "2026-09-19", "proj_semis": 62.6838, "proj_sd": 2.5675999999999997, "p_state": 0.9043, "p_finals": 0.0248, "p_first": 0.0001, "median_semis_rank": 8.0, "p_state_if_one_fewer_spot": 0.7818}, {"school": "Canon City HS", "region": "Southern", "basis": "last season", "last_score": "", "last_event": "", "last_date": "", "proj_semis": 62.04392631619925, "proj_sd": 3.7899678098896827, "p_state": 0.8329, "p_finals": 0.05365, "p_first": 0.0032, "median_semis_rank": 8.0, "p_state_if_one_fewer_spot": 0.7044}, {"school": "Harrison HS", "region": "Southern", "basis": "this season", "last_score": 53.3, "last_event": "Legacy Marching Festival", "last_date": "2026-09-26", "proj_semis": 60.4739, "proj_sd": 2.52, "p_state": 0.7753, "p_finals": 0.00355, "p_first": 0.0, "median_semis_rank": 9.0, "p_state_if_one_fewer_spot": 0.5821}, {"school": "Conifer HS", "region": "Metro", "basis": "this season", "last_score": 55.7, "last_event": "Lakewood Marching Festival", "last_date": "2026-10-03", "proj_semis": 60.43900000000001, "proj_sd": 2.4724, "p_state": 0.74745, "p_finals": 0.0031, "p_first": 0.0, "median_semis_rank": 9.0, "p_state_if_one_fewer_spot": 0.54375}, {"school": "Pueblo Central", "region": "Southern", "basis": "this season", "last_score": 48.6, "last_event": "Legend Marching Festival", "last_date": "2026-09-19", "proj_semis": 57.6338, "proj_sd": 2.5675999999999997, "p_state": 0.43865, "p_finals": 0.0001, "p_first": 0.0, "median_semis_rank": 10.0, "p_state_if_one_fewer_spot": 0.2493}, {"school": "Wheat Ridge HS", "region": "Metro", "basis": "last season", "last_score": "", "last_event": "", "last_date": "", "proj_semis": 55.943926316199246, "proj_sd": 3.7899678098896827, "p_state": 0.27455, "p_finals": 0.0004, "p_first": 0.0, "median_semis_rank": 9.0, "p_state_if_one_fewer_spot": 0.1604}, {"school": "Pueblo East HS", "region": "Southern", "basis": "last season", "last_score": "", "last_event": "", "last_date": "", "proj_semis": 50.23522631619925, "proj_sd": 3.7899678098896827, "p_state": 0.0374, "p_finals": 0.0, "p_first": 0.0, "median_semis_rank": 10.0, "p_state_if_one_fewer_spot": 0.01645}], "snapshot": [{"week_ending": "2026-09-19", "school": "Standley Lake HS", "last_known_score": 57.4, "event": "Legend Marching Festival", "event_date": "2026-09-19", "rank_last_known": 1}, {"week_ending": "2026-09-19", "school": "Evergreen HS", "last_known_score": 55.4, "event": "Legend Marching Festival", "event_date": "2026-09-19", "rank_last_known": 2}, {"week_ending": "2026-09-19", "school": "Green Mountain HS", "last_known_score": 53.65, "event": "Legend Marching Festival", "event_date": "2026-09-19", "rank_last_known": 3}, {"week_ending": "2026-09-19", "school": "Pueblo Central", "last_known_score": 48.6, "event": "Legend Marching Festival", "event_date": "2026-09-19", "rank_last_known": 4}, {"week_ending": "2026-09-26", "school": "Palisade HS", "last_known_score": 61.5, "event": "Colorado West Festival", "event_date": "2026-09-26", "rank_last_known": 1}, {"week_ending": "2026-09-26", "school": "D'Evelyn HS", "last_known_score": 58.25, "event": "Legacy Marching Festival", "event_date": "2026-09-26", "rank_last_known": 2}, {"week_ending": "2026-09-26", "school": "Standley Lake HS", "last_known_score": 57.4, "event": "Legend Marching Festival", "event_date": "2026-09-19", "rank_last_known": 3}, {"week_ending": "2026-09-26", "school": "Evergreen HS", "last_known_score": 55.4, "event": "Legend Marching Festival", "event_date": "2026-09-19", "rank_last_known": 4}, {"week_ending": "2026-09-26", "school": "Green Mountain HS", "last_known_score": 53.65, "event": "Legend Marching Festival", "event_date": "2026-09-19", "rank_last_known": 5}, {"week_ending": "2026-09-26", "school": "Harrison HS", "last_known_score": 53.3, "event": "Legacy Marching Festival", "event_date": "2026-09-26", "rank_last_known": 6}, {"week_ending": "2026-09-26", "school": "Pueblo Central", "last_known_score": 48.6, "event": "Legend Marching Festival", "event_date": "2026-09-19", "rank_last_known": 7}, {"week_ending": "2026-10-03", "school": "D'Evelyn HS", "last_known_score": 67.7, "event": "DCMI Marching Festival", "event_date": "2026-10-03", "rank_last_known": 1}, {"week_ending": "2026-10-03", "school": "Windsor HS", "last_known_score": 64.8, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "rank_last_known": 2}, {"week_ending": "2026-10-03", "school": "Evergreen HS", "last_known_score": 64.6, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "rank_last_known": 3}, {"week_ending": "2026-10-03", "school": "Standley Lake HS", "last_known_score": 63.95, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "rank_last_known": 4}, {"week_ending": "2026-10-03", "school": "Palisade HS", "last_known_score": 61.5, "event": "Colorado West Festival", "event_date": "2026-09-26", "rank_last_known": 5}, {"week_ending": "2026-10-03", "school": "Conifer HS", "last_known_score": 55.7, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "rank_last_known": 6}, {"week_ending": "2026-10-03", "school": "Green Mountain HS", "last_known_score": 53.65, "event": "Legend Marching Festival", "event_date": "2026-09-19", "rank_last_known": 7}, {"week_ending": "2026-10-03", "school": "Harrison HS", "last_known_score": 53.3, "event": "Legacy Marching Festival", "event_date": "2026-09-26", "rank_last_known": 8}, {"week_ending": "2026-10-03", "school": "Pueblo Central", "last_known_score": 48.6, "event": "Legend Marching Festival", "event_date": "2026-09-19", "rank_last_known": 9}], "focus_history": [{"season": 2024, "event": "CBA State 3A Semifinals", "event_date": "2024-10-28", "round": "State Semifinals", "total": 66.95, "days_before_state": 0}, {"season": 2025, "event": "Big Cat Marching Festival", "event_date": "2025-10-04", "round": "Prelims", "total": 64.3, "days_before_state": 23}, {"season": 2025, "event": "Metro 2A-4A Regional", "event_date": "2025-10-14", "round": "Regional", "total": 68.85, "days_before_state": 13}, {"season": 2025, "event": "CBA State 3A Semifinals", "event_date": "2025-10-27", "round": "State Semifinals", "total": 68.3, "days_before_state": 0}, {"season": 2026, "event": "Legend Marching Festival", "event_date": "2026-09-19", "round": "Prelims", "total": 57.4, "days_before_state": 37}, {"season": 2026, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "round": "Finals", "total": 63.95, "days_before_state": 23}, {"season": 2026, "event": "Lakewood Marching Festival", "event_date": "2026-10-03", "round": "Prelims", "total": 64.25, "days_before_state": 23}]};
+
+(function () {
+  if (!DATA) { document.getElementById("lede").textContent = "No data loaded."; return; }
+  const cfg = DATA.info.config, cal = DATA.info.calibration;
+  const FOCUS = cfg.focus_school, SEASON = cfg.season;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const fmt = (v, d = 3) => (v === "" || v == null || isNaN(v)) ? "–" : Number(v).toFixed(d);
+  const pct = p => p >= 0.995 ? ">99%" : p > 0 && p < 0.005 ? "<1%" : Math.round(p * 100) + "%";
+  const day = s => new Date(s + "T12:00:00");
+  const dfmt = s => day(s).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const daysBetween = (a, b) => Math.round((day(b) - day(a)) / 864e5);
+  const short = s => s.replace(/ HS$/, "");
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+
+  document.querySelectorAll(".focusname").forEach(n => n.textContent = short(FOCUS));
+  document.getElementById("season").textContent = SEASON;
+  document.getElementById("title").textContent = short(FOCUS) + " vs. the 3A field";
+  document.getElementById("asof").textContent = "Data as of " + day(DATA.info.as_of).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const semisDays = daysBetween(DATA.info.as_of, cfg.state_semis_date);
+  const focusRegion = (DATA.projections.find(p => p.school === FOCUS) || {}).region || "Metro";
+  document.getElementById("nextup").textContent = `${focusRegion} regional ${dfmt(cfg.regional_dates[focusRegion])}${cfg.focus_regional_time ? " (" + cfg.focus_regional_time + ")" : ""} · 3A State semis & finals ${dfmt(cfg.state_semis_date)} (${semisDays} days out)`;
+
+  const cur = DATA.scores.filter(r => r.season === SEASON);
+  const latestBy = {};
+  cur.slice().sort((a, b) => a.event_date.localeCompare(b.event_date) || (a.round === "Finals") - (b.round === "Finals"))
+     .forEach(r => latestBy[r.school] = r);
+  const latest = Object.values(latestBy).sort((a, b) => b.total - a.total);
+  const fl = latestBy[FOCUS];
+  const nScores = cur.filter(r => r.school === FOCUS).length;
+  document.getElementById("lede").textContent = fl
+    ? `${short(FOCUS)} has ${nScores} score${nScores > 1 ? "s" : ""} so far this season. Latest: ${fmt(fl.total)} at ${fl.event} on ${dfmt(fl.event_date)}.`
+    : `${short(FOCUS)} has no posted scores yet this season.`;
+
+  // ---------- tooltip helper
+  function tipper(host) {
+    const t = document.createElement("div"); t.className = "tip"; t.hidden = true; host.appendChild(t);
+    return {
+      show(html, x, y) { t.innerHTML = html; t.hidden = false; t.style.left = x + "px"; t.style.top = y + "px"; },
+      hide() { t.hidden = true; }
+    };
+  }
+  function sizeOf(host, ratio, minH) { const w = Math.max(300, host.clientWidth); return [w, Math.max(minH, Math.round(w * ratio))]; }
+  function niceTicks(lo, hi, step) { const t = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) t.push(+v.toFixed(3)); return t; }
+
+  // ---------- 1. latest scores bar chart
+  function drawLatest() {
+    const host = document.getElementById("latest"); host.innerHTML = "";
+    const tip = tipper(host);
+    const W = Math.max(300, host.clientWidth), rowH = 30, top = 8, narrow = W < 560;
+    const L = narrow ? 112 : 150, R = narrow ? 52 : 210, H = top + latest.length * rowH + 26;
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Latest score for each 3A band" }, host);
+    const lo = Math.floor((Math.min(...latest.map(r => r.total)) - 6) / 5) * 5, hi = Math.ceil((Math.max(...latest.map(r => r.total)) + 1) / 5) * 5;
+    const x = v => L + (v - lo) / (hi - lo) * (W - L - R);
+    niceTicks(lo, hi, 5).forEach(v => {
+      el("line", { x1: x(v), x2: x(v), y1: top, y2: H - 22, stroke: css("--grid") }, svg);
+      const t = el("text", { x: x(v), y: H - 6, "text-anchor": "middle", fill: css("--muted"), "font-size": 11, "font-family": "IBM Plex Mono, monospace" }, svg); t.textContent = v;
+    });
+    latest.forEach((r, i) => {
+      const y = top + i * rowH, isF = r.school === FOCUS;
+      const name = el("text", { x: L - 10, y: y + rowH / 2 + 4, "text-anchor": "end", fill: css(isF ? "--ink" : "--ink-2"), "font-size": 13, "font-weight": isF ? 700 : 400 }, svg);
+      name.textContent = short(r.school);
+      const w = Math.max(2, x(r.total) - L);
+      el("path", { d: `M${L},${y + 7} h${w - 4} a4,4 0 0 1 4,4 v${rowH - 22} a4,4 0 0 1 -4,4 h${-(w - 4)} z`, fill: css(isF ? "--focus" : "--other") }, svg);
+      const val = el("text", { x: x(r.total) + 6, y: y + rowH / 2 + 4, fill: css("--ink"), "font-size": 12.5, "font-family": "IBM Plex Mono, monospace", "font-weight": isF ? 600 : 400 }, svg);
+      val.textContent = fmt(r.total);
+      if (!narrow) { const ev = el("text", { x: x(r.total) + 60, y: y + rowH / 2 + 4, fill: css("--muted"), "font-size": 11.5 }, svg); ev.textContent = `${r.event.replace(/ (Marching )?(Festival|Invitational)$/, "")} · ${dfmt(r.event_date)}`; }
+      const hit = el("rect", { x: 0, y, width: W, height: rowH, fill: "transparent" }, svg);
+      hit.addEventListener("mousemove", e => { const b = host.getBoundingClientRect(); tip.show(`${r.school}<br><b>${fmt(r.total)}</b> · ${r.event}, ${dfmt(r.event_date)} (${r.round})`, e.clientX - b.left, e.clientY - b.top); });
+      hit.addEventListener("mouseleave", tip.hide);
+    });
+    const missing = DATA.projections.filter(p => p.basis === "last season").map(p => short(p.school));
+    document.getElementById("unscored").textContent = missing.length ? `No ${SEASON} score posted yet: ${missing.join(", ")}.` : "";
+  }
+
+  // ---------- 2. weekly last-known line chart
+  function drawWeekly() {
+    const host = document.getElementById("weekly"); host.innerHTML = "";
+    const tip = tipper(host);
+    const snap = DATA.snapshot; if (!snap.length) { host.textContent = "No weekly data yet."; return; }
+    const weeks = [...new Set(snap.map(s => s.week_ending))].sort();
+    const schools = [...new Set(snap.map(s => s.school))];
+    const [W, H] = sizeOf(host, 0.72, 280);
+    const L = 40, R = 104, T = 12, B = 30;
+    const vals = snap.map(s => s.last_known_score);
+    const lo = Math.floor((Math.min(...vals) - 1) / 2) * 2, hi = Math.ceil((Math.max(...vals) + 1) / 2) * 2;
+    const x = i => weeks.length === 1 ? (L + W - R) / 2 : L + i / (weeks.length - 1) * (W - L - R);
+    const y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Weekly last known 3A scores" }, host);
+    niceTicks(lo, hi, hi - lo > 12 ? 4 : 2).forEach(v => {
+      el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: css("--grid") }, svg);
+      const t = el("text", { x: L - 6, y: y(v) + 4, "text-anchor": "end", fill: css("--muted"), "font-size": 11, "font-family": "IBM Plex Mono, monospace" }, svg); t.textContent = v;
+    });
+    weeks.forEach((w, i) => { const t = el("text", { x: x(i), y: H - 8, "text-anchor": "middle", fill: css("--muted"), "font-size": 11 }, svg); t.textContent = dfmt(w); });
+    const order = schools.sort((a, b) => (a === FOCUS) - (b === FOCUS));
+    const ends = [];
+    order.forEach(s => {
+      const pts = weeks.map((w, i) => { const r = snap.find(q => q.week_ending === w && q.school === s); return r ? [x(i), y(r.last_known_score), r] : null; }).filter(Boolean);
+      const isF = s === FOCUS, col = css(isF ? "--focus" : "--other");
+      if (pts.length > 1) el("polyline", { points: pts.map(p => p[0] + "," + p[1]).join(" "), fill: "none", stroke: col, "stroke-width": isF ? 2.5 : 2, "stroke-linejoin": "round" }, svg);
+      pts.forEach(p => {
+        el("circle", { cx: p[0], cy: p[1], r: isF ? 4.5 : 3.5, fill: col, stroke: css("--surface"), "stroke-width": 2 }, svg);
+        const hit = el("circle", { cx: p[0], cy: p[1], r: 12, fill: "transparent" }, svg);
+        hit.addEventListener("mouseenter", () => tip.show(`${p[2].school}<br><b>${fmt(p[2].last_known_score)}</b> · #${p[2].rank_last_known} of the field<br>from ${p[2].event}, ${dfmt(p[2].event_date)}`, p[0] * host.clientWidth / W, p[1] * host.clientWidth / W));
+        hit.addEventListener("mouseleave", tip.hide);
+      });
+      const last = pts[pts.length - 1]; ends.push({ s, y: last[1], isF, x: last[0] });
+    });
+    // end labels, nudged apart
+    ends.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+    ends.forEach(e => { const t = el("text", { x: W - R + 10, y: e.y + 4, fill: css(e.isF ? "--ink" : "--muted"), "font-size": 11.5, "font-weight": e.isF ? 700 : 400 }, svg); t.textContent = short(e.s); });
+  }
+
+  // ---------- 3. focus school by season, aligned to State
+  function drawTrend() {
+    const host = document.getElementById("trend"); host.innerHTML = "";
+    const tip = tipper(host);
+    const fh = DATA.focus_history;
+    const p = DATA.projections.find(q => q.school === FOCUS);
+    const seasons = [...new Set(fh.map(r => r.season))].sort();
+    const colors = { [SEASON]: css("--focus"), [SEASON - 1]: css("--y2025"), [SEASON - 2]: css("--y2024") };
+    const lg = document.getElementById("trendlegend"); lg.innerHTML = "";
+    seasons.slice().reverse().forEach(s => lg.insertAdjacentHTML("beforeend", `<span><i class="sw" style="background:${colors[s] || css("--other")}"></i>${s}</span>`));
+    if (p) lg.insertAdjacentHTML("beforeend", `<span><i class="sw dash"></i>${SEASON} projected (±1 range shaded)</span>`);
+    const [W, H] = sizeOf(host, 0.72, 280);
+    const L = 40, R = 18, T = 12, B = 34;
+    const maxD = Math.max(42, ...fh.map(r => r.days_before_state));
+    const vals = fh.map(r => r.total).concat(p ? [p.proj_semis + p.proj_sd, p.last_score] : []);
+    const lo = Math.floor((Math.min(...vals) - 2) / 4) * 4, hi = Math.ceil((Math.max(...vals) + 1) / 4) * 4;
+    const x = d => L + (maxD - d) / maxD * (W - L - R);
+    const y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Focus school scores by season" }, host);
+    niceTicks(lo, hi, 4).forEach(v => {
+      el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: css("--grid") }, svg);
+      const t = el("text", { x: L - 6, y: y(v) + 4, "text-anchor": "end", fill: css("--muted"), "font-size": 11, "font-family": "IBM Plex Mono, monospace" }, svg); t.textContent = v;
+    });
+    [maxD >= 42 ? 42 : maxD, 28, 14, 0].forEach(d => { const t = el("text", { x: x(d), y: H - 14, "text-anchor": "middle", fill: css("--muted"), "font-size": 11 }, svg); t.textContent = d === 0 ? "State" : d + "d"; });
+    const cap = el("text", { x: (L + W - R) / 2, y: H - 1, "text-anchor": "middle", fill: css("--muted"), "font-size": 10.5 }, svg); cap.textContent = "days before State semifinals";
+    if (p && p.basis === "this season") {
+      const d0 = daysBetween(p.last_date, cfg.state_semis_date), pts = [];
+      for (let d = d0; d >= 0; d -= 1) pts.push([d, p.proj_semis - cal.rate * Math.max(0, d - cal.d0)]);
+      const up = pts.map(q => [x(q[0]), y(q[1] + p.proj_sd)]), dn = pts.map(q => [x(q[0]), y(q[1] - p.proj_sd)]).reverse();
+      el("path", { d: "M" + up.concat(dn).map(q => q.join(",")).join("L") + "Z", fill: css("--focus"), "fill-opacity": 0.12 }, svg);
+      el("polyline", { points: pts.map(q => x(q[0]) + "," + y(q[1])).join(" "), fill: "none", stroke: css("--focus"), "stroke-width": 2, "stroke-dasharray": "5 4" }, svg);
+      const t = el("text", { x: x(0) - 4, y: y(p.proj_semis - p.proj_sd) + 16, "text-anchor": "end", fill: css("--ink"), "font-size": 11.5, "font-weight": 600 }, svg); t.textContent = "proj. " + fmt(p.proj_semis, 1);
+    }
+    seasons.forEach(s => {
+      const rows = fh.filter(r => r.season === s && r.round !== "State Finals").sort((a, b) => b.days_before_state - a.days_before_state);
+      const col = colors[s] || css("--other");
+      if (rows.length > 1) el("polyline", { points: rows.map(r => x(r.days_before_state) + "," + y(r.total)).join(" "), fill: "none", stroke: col, "stroke-width": s === SEASON ? 2.5 : 2 }, svg);
+      rows.forEach(r => {
+        el("circle", { cx: x(r.days_before_state), cy: y(r.total), r: s === SEASON ? 5 : 4, fill: col, stroke: css("--surface"), "stroke-width": 2 }, svg);
+        const hit = el("circle", { cx: x(r.days_before_state), cy: y(r.total), r: 12, fill: "transparent" }, svg);
+        hit.addEventListener("mouseenter", () => tip.show(`${r.season} · ${r.event}<br><b>${fmt(r.total)}</b> · ${dfmt(r.event_date)}, ${r.days_before_state} days out`, x(r.days_before_state) * host.clientWidth / W, y(r.total) * host.clientWidth / W));
+        hit.addEventListener("mouseleave", tip.hide);
+      });
+    });
+  }
+
+  // ---------- 4. simulation (mirrors cba_model.simulate)
+  function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function normal(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
+  const gain = d => cal.rate * Math.max(0, d - cal.d0);
+  const actualReg = {}, actualSemis = {};
+  cur.forEach(r => { if (r.round === "Regional") actualReg[r.school] = r.total; if (r.round === "State Semifinals") actualSemis[r.school] = r.total; });
+  const statewide = (cfg.qualifying_mode || "statewide") === "statewide";
+  const state = { metro: statewide ? cfg.state_qualifiers : (cfg.state_spots_by_region[focusRegion] || 5), finals: cfg.finals_spots, drop: new Set() };
+  const N = 8000;
+  document.getElementById("nsims").textContent = N.toLocaleString();
+
+  function simulate() {
+    const field = DATA.projections.filter(p => !state.drop.has(p.school));
+    const spots = { ...cfg.state_spots_by_region, [focusRegion]: state.metro };
+    const k = field.length, r = rng(7), panel = cal.s0;
+    const hits = field.map(() => ({ st: 0, fi: 0, first: 0 }));
+    const regDays = field.map(p => daysBetween(cfg.regional_dates[p.region] || cfg.state_semis_date, cfg.state_semis_date));
+    const haveSemis = Object.keys(actualSemis).length > 0;
+    for (let n = 0; n < N; n++) {
+      const level = field.map(p => p.proj_semis + p.proj_sd * normal(r));
+      const reg = field.map((p, j) => p.school in actualReg ? actualReg[p.school] : level[j] - gain(regDays[j]) + panel * normal(r));
+      const q = new Array(k).fill(false);
+      if (haveSemis) field.forEach((p, j) => q[j] = p.school in actualSemis);
+      else if (statewide) {
+        field.map((_, j) => j).sort((a, b) => reg[b] - reg[a]).slice(0, state.metro).forEach(j => q[j] = true);
+      } else {
+        const byReg = {};
+        field.forEach((p, j) => (byReg[p.region || "?"] ||= []).push(j));
+        for (const g in byReg) { const take = spots[g] ?? byReg[g].length; byReg[g].sort((a, b) => reg[b] - reg[a]).slice(0, take).forEach(j => q[j] = true); }
+      }
+      const semis = field.map((p, j) => p.school in actualSemis ? actualSemis[p.school] : level[j] + 0.5 * panel * normal(r));
+      const ranked = field.map((_, j) => j).filter(j => q[j]).sort((a, b) => semis[b] - semis[a]);
+      ranked.forEach((j, i) => { hits[j].st++; if (i < state.finals) hits[j].fi++; if (i === 0) hits[j].first++; });
+    }
+    return field.map((p, j) => ({ ...p, p_state: hits[j].st / N, p_finals: hits[j].fi / N, p_first: hits[j].first / N }))
+                .sort((a, b) => b.proj_semis - a.proj_semis);
+  }
+
+  function pb(v) { return `<div class="pbar"><span class="mono">${pct(v)}</span><span class="track"><span class="fill" style="width:${(v * 100).toFixed(1)}%;display:block"></span></span></div>`; }
+  function drawOdds() {
+    document.getElementById("metroOut").value = state.metro; document.getElementById("finOut").value = state.finals;
+    const rows = simulate();
+    const t = document.getElementById("odds");
+    t.innerHTML = `<thead><tr><th>Band</th><th class="hide-sm">Regional</th><th class="hide-sm">Based on</th><th class="num hide-sm">Latest</th><th class="num">Projected semis</th><th>Make State</th><th>Make finals</th></tr></thead><tbody>` +
+      rows.map(p => `<tr class="${p.school === FOCUS ? "is-focus" : ""}"><td>${short(p.school)}${p.basis === "last season" ? " *" : ""}</td><td class="hide-sm">${p.region || "–"}</td>
+        <td class="hide-sm"><span class="basis ${p.basis === "last season" ? "carry" : ""}">${p.basis === "this season" ? SEASON + " scores" : SEASON - 1 + " results"}</span></td>
+        <td class="num hide-sm">${fmt(p.last_score)}</td><td class="num">${fmt(p.proj_semis, 1)} <span style="color:var(--muted)">± ${fmt(p.proj_sd, 1)}</span></td>
+        <td>${pb(p.p_state)}</td><td>${pb(p.p_finals)}</td></tr>`).join("") + "</tbody>";
+    const f = rows.find(p => p.school === FOCUS);
+    drawBoard(f, rows);
+  }
+
+  function drawBoard(f, rows) {
+    const b = document.getElementById("board");
+    const scored = latest.findIndex(r => r.school === FOCUS);
+    const projRank = rows.findIndex(r => r.school === FOCUS) + 1;
+    b.innerHTML = `
+      <div><span class="eyebrow">Latest score</span><span class="v">${fl ? fmt(fl.total) : "–"}</span><span class="n">${fl ? fl.event.replace(/ Marching/, "") + ", " + dfmt(fl.event_date) : "no score yet"}</span></div>
+      <div><span class="eyebrow">3A rank, last known</span><span class="v">${scored >= 0 ? "#" + (scored + 1) : "–"}<span style="font-size:1.2rem;color:var(--muted)"> of ${latest.length}</span></span><span class="n">among bands with a ${SEASON} score</span></div>
+      <div><span class="eyebrow">Chance to make State</span><span class="v">${f ? pct(f.p_state) : "–"}</span><span class="n">${statewide ? `top ${state.metro} of ${DATA.projections.length - state.drop.size} 3A regional scores` : `top ${state.metro} from ${focusRegion} regional`}</span></div>
+      <div><span class="eyebrow">Chance to make finals</span><span class="v">${f ? pct(f.p_finals) : "–"}</span><span class="n">top ${state.finals} at semis · projected #${projRank}</span></div>`;
+  }
+
+  function chips() {
+    const c = document.getElementById("chips"); c.innerHTML = "";
+    DATA.projections.slice().sort((a, b) => a.school.localeCompare(b.school)).forEach(p => {
+      if (p.school === FOCUS) return;
+      const btn = document.createElement("button"); btn.type = "button"; btn.className = "chipbtn"; btn.id = "chip-" + p.school.replace(/\W/g, "");
+      btn.textContent = short(p.school) + (p.basis === "last season" ? " *" : "");
+      btn.setAttribute("aria-pressed", state.drop.has(p.school) ? "false" : "true");
+      btn.title = p.basis === "last season" ? "No score yet this season" : "";
+      btn.onclick = () => { state.drop.has(p.school) ? state.drop.delete(p.school) : state.drop.add(p.school); btn.setAttribute("aria-pressed", state.drop.has(p.school) ? "false" : "true"); drawOdds(); };
+      c.appendChild(btn);
+    });
+    c.insertAdjacentHTML("beforeend", `<span class="note" style="align-self:center">* no ${SEASON} score yet</span>`);
+  }
+  const regionCount = () => statewide ? DATA.projections.length - state.drop.size : DATA.projections.filter(p => p.region === focusRegion && !state.drop.has(p.school)).length;
+  document.getElementById("metroDown").onclick = () => { state.metro = Math.max(1, state.metro - 1); drawOdds(); };
+  document.getElementById("metroUp").onclick = () => { state.metro = Math.min(Math.max(regionCount(), 1), state.metro + 1); drawOdds(); };
+  document.getElementById("finDown").onclick = () => { state.finals = Math.max(1, state.finals - 1); drawOdds(); };
+  document.getElementById("finUp").onclick = () => { state.finals = Math.min(10, state.finals + 1); drawOdds(); };
+
+  // ---------- method notes
+  const shift = DATA.info.season_shift;
+  document.getElementById("method").innerHTML = [
+    `Bands improve through the season. Last year's data says a band gains about <b>${(cal.rate * 7).toFixed(1)} points a week</b> until roughly ${cal.d0} days before State, and a projection made from one score lands within about <b>±${cal.s0.toFixed(1)}</b> points of the real semifinals score two times out of three (fit on ${cal.n_pairs} score pairs).`,
+    `Bands with more than one score this season get a weighted blend of their projections, leaning on the scores closest to State.`,
+    `Returning bands are running <b>${Math.abs(shift).toFixed(1)} points ${shift < 0 ? "behind" : "ahead of"}</b> where they finished last year (projected). Bands with no ${SEASON} score start from last year's semifinals score shifted by that amount, with a wider range.`,
+    `The 2026 CBA classification has <b>${cfg.class_size || DATA.projections.length} bands in 3A, ${cfg.state_qualifiers} qualify for State and ${cfg.finals_spots} make finals</b>. CBA rules say qualifiers are chosen from regional scores. In 2024 and 2025 the bands that missed State were the lowest regional scores statewide, no matter which regional they went to, so the model ranks all 3A regional scores together.`,
+    `D'Evelyn's enrollment is in the 2A range and Pueblo Central's is in the 4A range, but both are classified 3A for 2026 and are counted in the field.`,
+    `Once regionals and State post, the real scores replace the simulated ones and the odds lock in.`
+  ].map(s => `<li>${s}</li>`).join("");
+
+  function all() { drawLatest(); drawWeekly(); drawTrend(); }
+  chips(); drawOdds(); all();
+  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(all, 150); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", all);
+  new MutationObserver(all).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>
