@@ -7,6 +7,16 @@ on:
     - cron: "0 12 * 9-11 *"   # ~6 am MT
     - cron: "0 5 * 9-11 *"    # ~11 pm MT
   workflow_dispatch: {}        # "Run workflow" button for a manual refresh
+  push:                        # rebuild when you edit hand-entered scores, settings or code
+    branches: [main]
+    paths:
+      - "config.json"
+      - "data/manual_scores.csv"
+      - "data/school_classes.csv"
+      - "data/school_aliases.csv"
+      - "*.py"
+      - "dashboard_template.html"
+      - ".github/workflows/update-scores.yml"
 
 permissions:
   contents: write
