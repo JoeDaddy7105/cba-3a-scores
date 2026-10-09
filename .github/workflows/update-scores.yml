@@ -16,6 +16,7 @@ on:
       - "data/school_aliases.csv"
       - "*.py"
       - "dashboard_template.html"
+      - "notify.py"
       - ".github/workflows/update-scores.yml"
 
 permissions:
@@ -37,13 +38,25 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python update.py
       - name: Commit new data
+        id: commit
         run: |
           git config user.name "score-bot"
           git config user.email "score-bot@users.noreply.github.com"
-          git add data/*.csv data/model_info.json dashboard.html index.html
+          git add data/*.csv data/*.json dashboard.html index.html
           if git diff --cached --quiet; then
             echo "No new scores."
           else
             git commit -m "Scores updated $(date -u +%Y-%m-%d)"
             git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
+      - name: Send phone alert if new scores came in
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python notify.py
+      - name: Send a test alert (push with [notify-test] in the commit message)
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[notify-test]')
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python notify.py --test

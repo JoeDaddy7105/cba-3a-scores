@@ -17,6 +17,7 @@ Built around Standley Lake HS, but the focus school and class are settings in `c
 | `data/school_aliases.csv` | Fixes name variations ("Wheat Ridge" vs "Wheat Ridge HS"). |
 | `powerbi/queries.pq`, `powerbi/measures.dax` | Power Query and DAX to paste into Power BI. |
 | `.github/workflows/update-scores.yml` | Runs `update.py` on a schedule in GitHub and commits new data. |
+| `notify.py` | Sends a phone alert (ntfy) after a run that found new scores. |
 | `run_update.bat` | Same thing for Windows Task Scheduler if you'd rather run it at home. |
 
 ## First run
@@ -65,6 +66,19 @@ seed data gets replaced automatically as the scraper picks things up.
 **Option B, your PC.** Put the folder in OneDrive, schedule `run_update.bat` in Task Scheduler,
 and point Power BI at the CSVs through the SharePoint/OneDrive connector (see the bottom of
 `queries.pq`). A plain local folder path works in Desktop but needs a gateway for Service refresh.
+
+## Phone alerts
+
+When a run finds new scores, `notify.py` sends a push alert through [ntfy](https://ntfy.sh), a free
+notification service. The alert says which show posted, Standley Lake's latest score and rank, the
+State and finals odds (and how they moved), and other new 3A scores. Tapping it opens the dashboard.
+
+To subscribe: install the ntfy app (iPhone or Android), tap **+**, and enter the topic from
+`config.json` (`notify.ntfy_topic`). You can also open `https://ntfy.sh/<topic>` in a browser.
+Anyone with the topic name can subscribe, so you can share it with other parents.
+
+To send a test alert, push any commit with `[notify-test]` in the message, or run
+`python notify.py --test` locally. To change the topic privately, add a repo secret named `NTFY_TOPIC`.
 
 ## Suggested Power BI pages
 

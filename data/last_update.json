@@ -1,0 +1,17 @@
+{
+  "run_at": "2026-10-09T13:24:12",
+  "new_rows": 0,
+  "new_events": [],
+  "new_class_rows": [],
+  "focus": {
+    "school": "Standley Lake HS",
+    "latest": 63.95,
+    "latest_event": "Lakewood Marching Festival",
+    "rank": 4,
+    "of": 9,
+    "p_state": 0.99795,
+    "p_finals": 0.5275,
+    "prev_p_state": 0.99795,
+    "prev_p_finals": 0.5275
+  }
+}

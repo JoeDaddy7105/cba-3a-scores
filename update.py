@@ -71,6 +71,11 @@ def main():
     cfg = json.loads((ROOT / "config.json").read_text())
     as_of = dt.date.fromisoformat(a.as_of) if a.as_of else dt.date.today()
 
+    # remember what we had before this run, so we can say what's new
+    old_scores = pd.read_csv(DATA / "scores.csv") if (DATA / "scores.csv").exists() else pd.DataFrame()
+    old_keys = set(zip(old_scores.get("event_date", []), old_scores.get("round", []), old_scores.get("school", [])))
+    old_proj = pd.read_csv(DATA / "projections.csv") if (DATA / "projections.csv").exists() else pd.DataFrame()
+
     if not a.offline:
         seasons = [cfg["season"]] + ([cfg["season"] - 1, cfg["season"] - 2] if a.history else [])
         for s in seasons:
@@ -112,12 +117,46 @@ def main():
     (DATA / "model_info.json").write_text(json.dumps(info, indent=2, default=str))
 
     render_dashboard(scores, sim, snap, fh, info)
+    write_update_summary(scores, old_keys, sim, old_proj, latest, cfg)
     f = sim[sim["school"] == focus]
     if len(f):
         r = f.iloc[0]
         print(f"\n{focus}: projected semis {r.proj_semis:.1f} ± {r.proj_sd:.1f} | "
               f"P(state) {r.p_state:.0%} | P(finals) {r.p_finals:.0%}")
     print("Outputs written to", DATA)
+
+
+def write_update_summary(scores, old_keys, sim, old_proj, latest, cfg):
+    """data/last_update.json: what this run added. notify.py turns it into an alert."""
+    season, cls, focus = cfg["season"], cfg["focus_class"], cfg["focus_school"]
+    keys = list(zip(scores["event_date"], scores["round"], scores["school"]))
+    new = scores[[k not in old_keys for k in keys]] if old_keys else scores.iloc[0:0]
+    new = new[new["season"] == season]
+    new_cls = M.chrono(new[new["class"] == cls]).sort_values("total", ascending=False)
+
+    def odds(df):
+        r = df[df["school"] == focus] if len(df) else df
+        return (float(r["p_state"].iloc[0]), float(r["p_finals"].iloc[0])) if len(r) else (None, None)
+    p_state, p_finals = odds(sim)
+    prev_state, prev_finals = odds(old_proj)
+    fl = latest[latest["school"] == focus]
+    rank = int(latest.reset_index(drop=True).index[latest.reset_index(drop=True)["school"] == focus][0]) + 1 if len(fl) else None
+    summary = {
+        "run_at": dt.datetime.now().isoformat(timespec="seconds"),
+        "new_rows": int(len(new)),
+        "new_events": sorted({f"{e} {r}" for e, r in zip(new["event"], new["round"])}),
+        "new_class_rows": [{"school": r.school, "total": float(r.total), "event": r.event, "round": r["round"]}
+                           for _, r in new_cls.iterrows()],
+        "focus": {
+            "school": focus,
+            "latest": float(fl["total"].iloc[0]) if len(fl) else None,
+            "latest_event": fl["event"].iloc[0] if len(fl) else None,
+            "rank": rank, "of": int(len(latest)),
+            "p_state": p_state, "p_finals": p_finals,
+            "prev_p_state": prev_state, "prev_p_finals": prev_finals,
+        },
+    }
+    (DATA / "last_update.json").write_text(json.dumps(summary, indent=2, default=str))
 
 
 def render_dashboard(scores, sim, snap, fh, info):
