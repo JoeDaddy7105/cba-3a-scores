@@ -1,10 +1,10 @@
-season,event,event_date,round,school,class,total,note,source,class_place
-2026,DCMI Marching Festival,2026-10-03,Finals,D'Evelyn HS,3A,67.7,,manual,1
-2026,Lakewood Marching Festival,2026-10-03,Finals,Windsor HS,3A,64.8,,manual,2
-2026,Lakewood Marching Festival,2026-10-03,Prelims,Evergreen HS,3A,64.6,,manual,3
-2026,Lakewood Marching Festival,2026-10-03,Finals,Standley Lake HS,3A,63.95,,manual,3
-2026,Colorado West Festival,2026-09-26,Finals,Palisade HS,3A,61.5,,manual,1
-2026,Lakewood Marching Festival,2026-10-03,Finals,Conifer HS,3A,55.7,,manual,4
-2026,Legend Marching Festival,2026-09-19,Prelims,Green Mountain HS,3A,53.65,,manual,3
-2026,Legacy Marching Festival,2026-09-26,Prelims,Harrison HS,3A,53.3,,manual,3
-2026,Legend Marching Festival,2026-09-19,Prelims,Pueblo Central,3A,48.6,,manual,4
+season,event,event_date,round,school,class,total,note,source,class_source,penalty,section,source_label,pdf_url,scraped_at,class_place
+2026,DCMI Marching Festival,2026-10-03,Finals,D'Evelyn HS,3A,67.7,,scraped,lookup table,0.0,2026 Sanctioned Shows,DCMI Finals,https://www.coloradomarching.org/_files/ugd/83f67e_4b4eee9fd77445bea6bec595e4005414.pdf,2026-10-09T19:12:06,1
+2026,Lakewood Marching Festival,2026-10-03,Finals,Windsor HS,3A,64.8,,scraped,lookup table,0.0,2026 Sanctioned Shows,Lakewood Finals,https://www.coloradomarching.org/_files/ugd/83f67e_72099b739cdb4f4b9afa11e38bf417f4.pdf,2026-10-09T19:12:06,2
+2026,Lakewood Marching Festival,2026-10-03,Prelims,Evergreen HS,3A,64.6,,scraped,recap row,0.0,2026 Sanctioned Shows,Lakewood Prelims,https://www.coloradomarching.org/_files/ugd/83f67e_90c1c45740d74a95b5d279367861bc8e.pdf,2026-10-09T19:12:06,3
+2026,Lakewood Marching Festival,2026-10-03,Finals,Standley Lake HS,3A,63.95,,scraped,lookup table,0.0,2026 Sanctioned Shows,Lakewood Finals,https://www.coloradomarching.org/_files/ugd/83f67e_72099b739cdb4f4b9afa11e38bf417f4.pdf,2026-10-09T19:12:06,3
+2026,Colorado West Festival,2026-09-26,Finals,Palisade HS,3A,61.5,,scraped,recap row,0.0,2026 Sanctioned Shows,Colorado West Finals,https://www.coloradomarching.org/_files/ugd/83f67e_8d9f7664ac294c5a8646f40405728395.pdf,2026-10-09T19:12:06,1
+2026,Lakewood Marching Festival,2026-10-03,Finals,Conifer HS,3A,55.7,,scraped,lookup table,0.0,2026 Sanctioned Shows,Lakewood Finals,https://www.coloradomarching.org/_files/ugd/83f67e_72099b739cdb4f4b9afa11e38bf417f4.pdf,2026-10-09T19:12:06,4
+2026,Legend Marching Festival,2026-09-19,Prelims,Green Mountain HS,3A,53.65,,scraped,recap section,0.0,2026 Sanctioned Shows,Legend By Class,https://www.coloradomarching.org/_files/ugd/83f67e_7031922c9f6d47abaa976826cc00ad7c.pdf,2026-10-09T19:12:06,3
+2026,Legacy Marching Festival,2026-09-26,Prelims,Harrison HS,3A,53.3,,scraped,recap row,0.0,2026 Sanctioned Shows,Legacy Prelim,https://www.coloradomarching.org/_files/ugd/83f67e_91014ccf9bc04b5d95ec6afbe4b8da66.pdf,2026-10-09T19:12:06,3
+2026,Legend Marching Festival,2026-09-19,Prelims,Pueblo Central,3A,48.6,,scraped,recap section,0.2,2026 Sanctioned Shows,Legend By Class,https://www.coloradomarching.org/_files/ugd/83f67e_7031922c9f6d47abaa976826cc00ad7c.pdf,2026-10-09T19:12:06,4
