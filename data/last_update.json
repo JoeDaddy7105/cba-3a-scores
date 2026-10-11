@@ -1,16 +1,45 @@
 {
-  "run_at": "2026-10-10T17:09:17",
-  "new_rows": 0,
-  "new_events": [],
-  "new_class_rows": [],
+  "run_at": "2026-10-11T11:03:31",
+  "new_rows": 49,
+  "new_events": [
+    "Harrison Marching Festival Finals",
+    "Harrison Marching Festival Prelims",
+    "Monarch Marching Festival Prelims"
+  ],
+  "new_class_rows": [
+    {
+      "school": "Evergreen HS",
+      "total": 62.3,
+      "event": "Monarch Marching Festival",
+      "round": "Prelims"
+    },
+    {
+      "school": "Canon City HS",
+      "total": 61.05,
+      "event": "Harrison Marching Festival",
+      "round": "Finals"
+    },
+    {
+      "school": "Canon City HS",
+      "total": 61.0,
+      "event": "Harrison Marching Festival",
+      "round": "Prelims"
+    },
+    {
+      "school": "Pueblo East HS",
+      "total": 51.3,
+      "event": "Harrison Marching Festival",
+      "round": "Prelims"
+    }
+  ],
   "focus": {
     "school": "Standley Lake HS",
     "latest": 63.95,
     "latest_event": "Lakewood Marching Festival",
-    "rank": 4,
-    "of": 9,
-    "p_state": 0.99795,
-    "p_finals": 0.5275,
+    "rank": 3,
+    "of": 11,
+    "p_state": 0.9971,
+    "p_finals": 0.535,
     "prev_p_state": 0.99795,
     "prev_p_finals": 0.5275
   }
