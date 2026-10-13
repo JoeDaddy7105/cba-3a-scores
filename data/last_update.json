@@ -1,18 +1,8 @@
 {
-  "run_at": "2026-10-13T12:14:59",
-  "new_rows": 20,
-  "new_events": [
-    "Regional - North 1A-2A-3A Regional",
-    "Regional - North 4A-5A Regional"
-  ],
-  "new_class_rows": [
-    {
-      "school": "Windsor HS",
-      "total": 65.05,
-      "event": "Regional - North 1A-2A-3A",
-      "round": "Regional"
-    }
-  ],
+  "run_at": "2026-10-13T19:04:36",
+  "new_rows": 0,
+  "new_events": [],
+  "new_class_rows": [],
   "focus": {
     "school": "Standley Lake HS",
     "latest": 63.95,
@@ -22,6 +12,6 @@
     "p_state": 0.9971,
     "p_finals": 0.5558,
     "prev_p_state": 0.9971,
-    "prev_p_finals": 0.535
+    "prev_p_finals": 0.5558
   }
 }
