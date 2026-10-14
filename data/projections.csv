@@ -1,14 +1,14 @@
 school,region,basis,last_score,last_event,last_date,proj_semis,proj_sd,p_state,p_finals,p_first,median_semis_rank,p_state_if_one_fewer_spot
-Pueblo County HS,Southern,last season,,,,73.95700238129086,3.7899678098896827,0.99945,0.93895,0.65865,1.0,0.9988
-D'Evelyn HS,Metro,this season,67.7,DCMI Marching Festival,2026-10-03,69.99093431152954,2.4724,0.9991,0.7686,0.12535,3.0,0.9965
-Windsor HS,Northern,this season,65.05,Regional - North 1A-2A-3A,2026-10-12,69.47449884437472,2.4112,1.0,0.70085,0.08255,3.0,1.0
-Palisade HS,Western,this season,61.5,Colorado West Festival,2026-09-26,68.9489,2.52,0.99835,0.6239,0.0679,4.0,0.99445
-Standley Lake HS,Metro,this season,63.95,Lakewood Marching Festival,2026-10-03,68.46999824909292,2.4724,0.9971,0.5558,0.0494,4.0,0.98875
-Evergreen HS,Metro,this season,62.3,Monarch Marching Festival,2026-10-10,66.74359240791154,2.4248,0.98825,0.28945,0.01435,6.0,0.9668
-Canon City HS,Southern,this season,61.05,Harrison Marching Festival,2026-10-10,64.47909999999999,2.4248,0.95915,0.086,0.0017,7.0,0.89965
-Green Mountain HS,Metro,this season,53.65,Legend Marching Festival,2026-09-19,62.6838,2.5675999999999997,0.8734,0.02775,0.0001,8.0,0.7402
-Harrison HS,Southern,this season,53.3,Legacy Marching Festival,2026-09-26,60.4739,2.52,0.72255,0.00375,0.0,9.0,0.5177
-Conifer HS,Metro,this season,55.7,Lakewood Marching Festival,2026-10-03,60.43900000000001,2.4724,0.6904,0.0036,0.0,9.0,0.48225
-Pueblo Central,Southern,this season,48.6,Legend Marching Festival,2026-09-19,57.6338,2.5675999999999997,0.3768,0.0001,0.0,10.0,0.20435
-Wheat Ridge HS,Metro,last season,,,,56.50700238129087,3.7899678098896827,0.27615,0.00125,0.0,9.0,0.162
-Pueblo East HS,Southern,this season,51.3,Harrison Marching Festival,2026-10-10,54.7541,2.4248,0.1193,0.0,0.0,10.0,0.04855
+Pueblo County HS,Southern,last season,,,,74.20089096915272,3.7899678098896827,0.99955,0.94155,0.6627,1.0,0.99945
+D'Evelyn HS,Metro,this season,69.65,Regional - 2A-4A Metro,2026-10-13,70.60012763648746,2.4044,1.0,0.82385,0.1505,3.0,1.0
+Windsor HS,Northern,this season,65.05,Regional - North 1A-2A-3A,2026-10-12,69.47449884437472,2.4112,1.0,0.6824,0.072,4.0,1.0
+Palisade HS,Western,this season,61.5,Colorado West Festival,2026-09-26,68.9489,2.52,0.99905,0.60495,0.05915,4.0,0.9975
+Standley Lake HS,Metro,this season,65.45,Regional - 2A-4A Metro,2026-10-13,68.37367176314922,2.4044,1.0,0.52,0.0375,4.0,1.0
+Evergreen HS,Metro,this season,65.75,Regional - 2A-4A Metro,2026-10-13,67.18065136202605,2.4044,1.0,0.33125,0.0167,5.0,1.0
+Canon City HS,Southern,this season,61.05,Harrison Marching Festival,2026-10-10,64.47909999999999,2.4248,0.95955,0.078,0.00145,7.0,0.9303
+Green Mountain HS,Metro,this season,59.15,Regional - 2A-4A Metro,2026-10-13,62.21665105464253,2.4044,0.99905,0.01325,0.0,8.0,0.95105
+Harrison HS,Southern,this season,53.3,Legacy Marching Festival,2026-09-26,60.4739,2.52,0.693,0.00345,0.0,9.0,0.58565
+Conifer HS,Metro,this season,56.8,Regional - 2A-4A Metro,2026-10-13,60.099383688789146,2.4044,0.75075,0.00125,0.0,9.0,0.24895
+Wheat Ridge HS,Metro,this season,56.05,Regional - 2A-4A Metro,2026-10-13,58.706999999999994,2.4044,0.16025,0.0,0.0,10.0,0.00485
+Pueblo Central,Southern,this season,48.6,Legend Marching Festival,2026-09-19,57.6338,2.5675999999999997,0.34295,5e-05,0.0,10.0,0.22985
+Pueblo East HS,Southern,this season,51.3,Harrison Marching Festival,2026-10-10,54.7541,2.4248,0.09585,0.0,0.0,10.0,0.0524
