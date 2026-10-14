@@ -1,47 +1,8 @@
 {
-  "run_at": "2026-10-14T05:25:45",
-  "new_rows": 16,
-  "new_events": [
-    "Regional - 2A-4A Metro Regional"
-  ],
-  "new_class_rows": [
-    {
-      "school": "D'Evelyn HS",
-      "total": 69.65,
-      "event": "Regional - 2A-4A Metro",
-      "round": "Regional"
-    },
-    {
-      "school": "Evergreen HS",
-      "total": 65.75,
-      "event": "Regional - 2A-4A Metro",
-      "round": "Regional"
-    },
-    {
-      "school": "Standley Lake HS",
-      "total": 65.45,
-      "event": "Regional - 2A-4A Metro",
-      "round": "Regional"
-    },
-    {
-      "school": "Green Mountain HS",
-      "total": 59.15,
-      "event": "Regional - 2A-4A Metro",
-      "round": "Regional"
-    },
-    {
-      "school": "Conifer HS",
-      "total": 56.8,
-      "event": "Regional - 2A-4A Metro",
-      "round": "Regional"
-    },
-    {
-      "school": "Wheat Ridge HS",
-      "total": 56.05,
-      "event": "Regional - 2A-4A Metro",
-      "round": "Regional"
-    }
-  ],
+  "run_at": "2026-10-14T09:48:32",
+  "new_rows": 0,
+  "new_events": [],
+  "new_class_rows": [],
   "focus": {
     "school": "Standley Lake HS",
     "latest": 65.45,
@@ -50,7 +11,7 @@
     "of": 12,
     "p_state": 1.0,
     "p_finals": 0.52,
-    "prev_p_state": 0.9971,
-    "prev_p_finals": 0.5558
+    "prev_p_state": 1.0,
+    "prev_p_finals": 0.52
   }
 }
