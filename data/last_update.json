@@ -1,42 +1,8 @@
 {
-  "run_at": "2026-10-15T04:21:13",
-  "new_rows": 28,
-  "new_events": [
-    "Regional - South 1A-2A-3A Regional",
-    "Regional - South 4A-5A Regional"
-  ],
-  "new_class_rows": [
-    {
-      "school": "Pueblo County HS",
-      "total": 70.9,
-      "event": "Regional - South 1A-2A-3A",
-      "round": "Regional"
-    },
-    {
-      "school": "Harrison HS",
-      "total": 62.1,
-      "event": "Regional - South 1A-2A-3A",
-      "round": "Regional"
-    },
-    {
-      "school": "Canon City HS",
-      "total": 56.85,
-      "event": "Regional - South 1A-2A-3A",
-      "round": "Regional"
-    },
-    {
-      "school": "Pueblo Central",
-      "total": 55.75,
-      "event": "Regional - South 1A-2A-3A",
-      "round": "Regional"
-    },
-    {
-      "school": "Pueblo East HS",
-      "total": 51.1,
-      "event": "Regional - South 1A-2A-3A",
-      "round": "Regional"
-    }
-  ],
+  "run_at": "2026-10-15T09:29:10",
+  "new_rows": 0,
+  "new_events": [],
+  "new_class_rows": [],
   "focus": {
     "school": "Standley Lake HS",
     "latest": 65.45,
@@ -46,6 +12,6 @@
     "p_state": 1.0,
     "p_finals": 0.5206,
     "prev_p_state": 1.0,
-    "prev_p_finals": 0.52
+    "prev_p_finals": 0.5206
   }
 }
