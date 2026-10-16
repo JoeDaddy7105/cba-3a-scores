@@ -21,6 +21,9 @@
   --good: #0ca30c; --warn: #fab219; --crit: #d03b3b;
   --good-ink: #006300;
   --chip: #e9ece5;
+  --heat-lo: #f1f5fb; --heat-hi: #104281; --heat-ink: #ffffff;
+  --div-pos: #2a78d6; --div-neg: #e34948;
+  --cap-mp: #2a78d6; --cap-vp: #eb6834; --cap-ge: #1baf7a;
   --f-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -28,12 +31,12 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #0f110f; --surface: #191c18; --ink: #f4f6f1; --ink-2: #c2c7bb; --muted: #8b9187;
   --grid: #2a2e28; --axis: #3a3f37; --line: rgba(255,255,255,0.10);
-  --focus: #3987e5; --y2025: #d95926; --y2024: #199e70; --other: #50564d; --chip: #252923;
+  --focus: #3987e5; --y2025: #d95926; --y2024: #199e70; --other: #50564d; --chip: #252923; --heat-lo: #1c2129; --heat-hi: #86b6ef; --heat-ink: #0f110f; --div-pos: #3987e5; --div-neg: #e66767; --cap-mp: #3987e5; --cap-vp: #d95926; --cap-ge: #199e70;
   --good-ink: #0ca30c; color-scheme: dark; } }
 :root[data-theme="dark"] {
   --bg: #0f110f; --surface: #191c18; --ink: #f4f6f1; --ink-2: #c2c7bb; --muted: #8b9187;
   --grid: #2a2e28; --axis: #3a3f37; --line: rgba(255,255,255,0.10);
-  --focus: #3987e5; --y2025: #d95926; --y2024: #199e70; --other: #50564d; --chip: #252923;
+  --focus: #3987e5; --y2025: #d95926; --y2024: #199e70; --other: #50564d; --chip: #252923; --heat-lo: #1c2129; --heat-hi: #86b6ef; --heat-ink: #0f110f; --div-pos: #3987e5; --div-neg: #e66767; --cap-mp: #3987e5; --cap-vp: #d95926; --cap-ge: #199e70;
   --good-ink: #0ca30c; color-scheme: dark; }
 
 * { box-sizing: border-box; }
@@ -61,7 +64,7 @@ header.top .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--i
   .board > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
 }
 
-section.panel { background: var(--surface); border: 1px solid var(--line); padding: 20px; display: grid; gap: 14px; min-width: 0; }
+section.panel { background: var(--surface); border: 1px solid var(--line); padding: 20px; display: grid; gap: 14px; min-width: 0; align-content: start; }
 .panel-head { display: grid; gap: 6px; }
 .chart { width: 100%; min-width: 0; position: relative; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -110,6 +113,35 @@ tr:not(.is-focus) .pbar .fill { background: var(--ink-2); }
   .pbar .track { display: none; }
 }
 
+.heat { border-collapse: separate; border-spacing: 2px; width: 100%; min-width: 560px; font-size: 0.82rem; }
+.heat th { text-transform: none; letter-spacing: 0; font: 600 0.75rem var(--f-data); color: var(--ink-2); text-align: center; border: 0; padding: 4px 2px; }
+.heat th.band { text-align: left; font-family: var(--f-body); }
+.heat td { text-align: center; padding: 7px 2px; border: 0; border-radius: 3px; font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+.heat td.band { text-align: left; background: transparent; font-family: var(--f-body); white-space: nowrap; padding-right: 10px; }
+.heat td.line { border-left: 2px dashed var(--ink); }
+.heat th.line { border-left: 2px dashed var(--ink); }
+.heat tr.is-focus td.band { font-weight: 700; }
+.heat td.pf { font-weight: 600; text-align: right; padding-left: 10px; background: transparent; }
+.slider { display: flex; align-items: center; gap: 10px; }
+.slider input { width: min(260px, 60vw); accent-color: var(--focus); }
+.slider output { font: 600 0.95rem var(--f-data); min-width: 52px; }
+.kpis { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 0.9rem; color: var(--ink-2); }
+.kpis b { color: var(--ink); font-family: var(--f-data); font-weight: 600; }
+.mtg { display: inline-block; font: 500 0.76rem var(--f-data); padding: 2px 7px; border-radius: 999px; margin: 2px 4px 2px 0; background: var(--chip); color: var(--ink); white-space: nowrap; }
+.mtg.up::before { content: "▲ "; color: var(--good-ink); }
+.mtg.dn::before { content: "▼ "; color: var(--crit); }
+.gapbar { position: relative; height: 10px; background: var(--grid); border-radius: 5px; min-width: 90px; }
+.gapbar i { position: absolute; top: 0; height: 100%; border-radius: 5px; }
+.gapbar::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--ink-2); }
+select { font: 500 0.9rem var(--f-body); padding: 5px 8px; border: 1px solid var(--axis); background: var(--surface); color: var(--ink); border-radius: 4px; }
+.capgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .capgrid { grid-template-columns: minmax(0, 1fr); } }
+.capcard { border: 1px solid var(--line); padding: 12px; display: grid; gap: 6px; min-width: 0; }
+.capcard .big { font: 700 1.9rem/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.capcard .row { display: flex; justify-content: space-between; gap: 8px; font-size: 0.84rem; color: var(--ink-2); }
+.capcard .row b { font-family: var(--f-data); color: var(--ink); font-weight: 500; }
+.ok { color: var(--good-ink); font-weight: 600; }
+.miss { color: var(--crit); font-weight: 600; }
 .notes { display: grid; gap: 10px; font-size: 0.9rem; color: var(--ink-2); }
 .notes ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 6px; }
 .notes a { color: var(--focus); }
@@ -125,10 +157,67 @@ tr:not(.is-focus) .pbar .fill { background: var(--ink-2); }
 
   <div class="board" id="board"></div>
 
+  <section class="panel" id="race">
+    <div class="panel-head">
+      <h2>The finals race</h2>
+      <p class="sub" id="raceSub"></p>
+    </div>
+    <div class="controls">
+      <div class="ctl"><label for="finOut">3A finals spots</label>
+        <div class="stepper"><button type="button" id="finDown" aria-label="One fewer finals spot">−</button><output id="finOut">4</output><button type="button" id="finUp" aria-label="One more finals spot">+</button></div></div>
+      <div class="ctl"><label for="boost"><span class="focusname"></span> on State day</label>
+        <div class="slider"><input type="range" id="boost" min="-2" max="2" step="0.25" value="0"><output id="boostOut">±0.00</output></div></div>
+      <div class="ctl" style="min-width:0;flex:1 1 260px"><label>State field (tap a band to take it out)</label>
+        <div class="field-chips" id="chips"></div></div>
+    </div>
+    <div class="tablewrap"><table class="heat" id="heat"></table></div>
+    <p class="note" id="heatNote"></p>
+  </section>
+
+  <div class="two">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Neutral-panel ratings</h2>
+        <p class="sub">Each band's projected State-day level with the judging panels taken out. Bars show the likely range (about two chances in three).</p>
+      </div>
+      <div class="legend" id="ratLegend"></div>
+      <div class="chart" id="ratings"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>How generous each panel was</h2>
+        <p class="sub">Points above or below a neutral panel, estimated from every band (all classes) that went to more than one show. Shows with 3A bands only.</p>
+      </div>
+      <div class="chart" id="panels"></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Head to head</h2>
+      <p class="sub">Every time <span class="focusname"></span> and a rival were scored by the same panel, and the chance <span class="focusname"></span> finishes ahead of them at State.</p>
+    </div>
+    <div class="tablewrap"><table id="h2h"></table></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Where the points are</h2>
+      <p class="sub">Caption scores with the panels taken out. General Effect is 60 of the 100 points, Music and Visual Performance are 20 each.</p>
+    </div>
+    <div class="controls"><div class="ctl"><label for="rival">Compare <span class="focusname"></span> with</label><select id="rival"></select></div></div>
+    <div class="capgrid" id="capgrid"></div>
+    <div class="panel-head" style="margin-top:6px"><h3 style="font-size:1.15rem;text-transform:uppercase"><span class="focusname"></span> caption scores, show by show</h3>
+      <p class="sub">Percent of the points available in each caption, as scored that day.</p></div>
+    <div class="legend" id="capLegend"></div>
+    <div class="chart" id="capTrend"></div>
+  </section>
+
   <section class="panel">
     <div class="panel-head">
       <h2>Where the 3A field stands</h2>
-      <p class="sub">Each band's most recent score this season. Bands go to different shows with different judges, so treat gaps under about two points as a toss-up.</p>
+      <p class="sub">Each band's most recent raw score this season, as the judges gave it. Bands went to different shows with different panels; the neutral-panel ratings above adjust for that.</p>
     </div>
     <div class="chart" id="latest"></div>
     <p class="note" id="unscored"></p>
@@ -138,7 +227,7 @@ tr:not(.is-focus) .pbar .fill { background: var(--ink-2); }
     <section class="panel">
       <div class="panel-head">
         <h2>Week by week</h2>
-        <p class="sub">Last known score for every 3A band as of each Saturday. A line stays flat until that band competes again.</p>
+        <p class="sub">Last known score for every 3A band as of each Saturday, plus the latest scores since. A line stays flat until that band competes again.</p>
       </div>
       <div class="chart" id="weekly"></div>
     </section>
@@ -154,19 +243,12 @@ tr:not(.is-focus) .pbar .fill { background: var(--ink-2); }
 
   <section class="panel">
     <div class="panel-head">
-      <h2>Odds of State and finals</h2>
-      <p class="sub">The season replayed <span id="nsims"></span> times: draw a score for every band, send the top regional scores to State, then the top bands at semifinals to finals. Change the assumptions to see how the odds move.</p>
+      <h2>Track record</h2>
+      <p class="sub">The same method run on past seasons, using only scores from before State, compared with the real 3A semifinals.</p>
     </div>
-    <div class="controls">
-      <div class="ctl"><label for="metroOut">3A bands that qualify for State</label>
-        <div class="stepper"><button type="button" id="metroDown" aria-label="One fewer State spot">−</button><output id="metroOut">10</output><button type="button" id="metroUp" aria-label="One more State spot">+</button></div></div>
-      <div class="ctl"><label for="finOut">3A finals spots</label>
-        <div class="stepper"><button type="button" id="finDown" aria-label="One fewer finals spot">−</button><output id="finOut">4</output><button type="button" id="finUp" aria-label="One more finals spot">+</button></div></div>
-      <div class="ctl" style="min-width:0;flex:1 1 280px"><label>Bands in the 3A field (tap one to see the odds without it)</label>
-        <div class="field-chips" id="chips"></div></div>
-    </div>
-    <div class="tablewrap"><table id="odds"></table></div>
-    <p class="note">Projected semis is the middle estimate; the range covers about two thirds of outcomes. Bands marked * have no score yet this year, so their projection starts from last year's semifinals (or regional) score and carries a wider range.</p>
+    <div class="kpis" id="btKpis"></div>
+    <p class="note" id="btNote"></p>
+    <div class="tablewrap"><table id="bt"></table></div>
   </section>
 
   <section class="panel notes">
@@ -249,7 +331,7 @@ const DATA = /*__DATA__*/null;
       hit.addEventListener("mousemove", e => { const b = host.getBoundingClientRect(); tip.show(`${r.school}<br><b>${fmt(r.total)}</b> · ${r.event}, ${dfmt(r.event_date)} (${r.round})`, e.clientX - b.left, e.clientY - b.top); });
       hit.addEventListener("mouseleave", tip.hide);
     });
-    const missing = DATA.projections.filter(p => p.basis === "last season").map(p => short(p.school));
+    const missing = DATA.projections.filter(p => !latestBy[p.school]).map(p => short(p.school));
     document.getElementById("unscored").textContent = missing.length ? `No ${SEASON} score posted yet: ${missing.join(", ")}.` : "";
   }
 
@@ -302,11 +384,11 @@ const DATA = /*__DATA__*/null;
     const colors = { [SEASON]: css("--focus"), [SEASON - 1]: css("--y2025"), [SEASON - 2]: css("--y2024") };
     const lg = document.getElementById("trendlegend"); lg.innerHTML = "";
     seasons.slice().reverse().forEach(s => lg.insertAdjacentHTML("beforeend", `<span><i class="sw" style="background:${colors[s] || css("--other")}"></i>${s}</span>`));
-    if (p) lg.insertAdjacentHTML("beforeend", `<span><i class="sw dash"></i>${SEASON} projected (±1 range shaded)</span>`);
+    if (p && p.strength) lg.insertAdjacentHTML("beforeend", `<span><i class="sw dash"></i>${SEASON} projected State level, neutral panel (likely range shaded)</span>`);
     const [W, H] = sizeOf(host, 0.72, 280);
     const L = 40, R = 18, T = 12, B = 34;
     const maxD = Math.max(42, ...fh.map(r => r.days_before_state));
-    const vals = fh.map(r => r.total).concat(p ? [p.proj_semis + p.proj_sd, p.last_score] : []);
+    const vals = fh.map(r => r.total).concat(p && p.strength ? [p.strength + p.strength_sd, p.strength - p.strength_sd] : []);
     const lo = Math.floor((Math.min(...vals) - 2) / 4) * 4, hi = Math.ceil((Math.max(...vals) + 1) / 4) * 4;
     const x = d => L + (maxD - d) / maxD * (W - L - R);
     const y = v => T + (hi - v) / (hi - lo) * (H - T - B);
@@ -317,13 +399,13 @@ const DATA = /*__DATA__*/null;
     });
     [maxD >= 42 ? 42 : maxD, 28, 14, 0].forEach(d => { const t = el("text", { x: x(d), y: H - 14, "text-anchor": "middle", fill: css("--muted"), "font-size": 11 }, svg); t.textContent = d === 0 ? "State" : d + "d"; });
     const cap = el("text", { x: (L + W - R) / 2, y: H - 1, "text-anchor": "middle", fill: css("--muted"), "font-size": 10.5 }, svg); cap.textContent = "days before State semifinals";
-    if (p && p.basis === "this season") {
+    if (p && p.strength) {
       const d0 = daysBetween(p.last_date, cfg.state_semis_date), pts = [];
-      for (let d = d0; d >= 0; d -= 1) pts.push([d, p.proj_semis - cal.rate * Math.max(0, d - cal.d0)]);
-      const up = pts.map(q => [x(q[0]), y(q[1] + p.proj_sd)]), dn = pts.map(q => [x(q[0]), y(q[1] - p.proj_sd)]).reverse();
+      for (let d = Math.max(d0, 0); d >= 0; d -= 1) pts.push([d, p.strength - P.G * Math.max(0, d - P.lag)]);
+      const up = pts.map(q => [x(q[0]), y(q[1] + p.strength_sd)]), dn = pts.map(q => [x(q[0]), y(q[1] - p.strength_sd)]).reverse();
       el("path", { d: "M" + up.concat(dn).map(q => q.join(",")).join("L") + "Z", fill: css("--focus"), "fill-opacity": 0.12 }, svg);
       el("polyline", { points: pts.map(q => x(q[0]) + "," + y(q[1])).join(" "), fill: "none", stroke: css("--focus"), "stroke-width": 2, "stroke-dasharray": "5 4" }, svg);
-      const t = el("text", { x: x(0) - 4, y: y(p.proj_semis - p.proj_sd) + 16, "text-anchor": "end", fill: css("--ink"), "font-size": 11.5, "font-weight": 600 }, svg); t.textContent = "proj. " + fmt(p.proj_semis, 1);
+      const t = el("text", { x: x(0) - 4, y: y(p.strength - p.strength_sd) + 16, "text-anchor": "end", fill: css("--ink"), "font-size": 11.5, "font-weight": 600 }, svg); t.textContent = "proj. " + fmt(p.strength, 1);
     }
     seasons.forEach(s => {
       const rows = fh.filter(r => r.season === s && r.round !== "State Finals").sort((a, b) => b.days_before_state - a.days_before_state);
@@ -338,101 +420,264 @@ const DATA = /*__DATA__*/null;
     });
   }
 
-  // ---------- 4. simulation (mirrors cba_model.simulate)
+  // ---------- shared
+  const INS = DATA.info.insights || {};
+  const P = INS.params || { G: cal.rate, lag: cal.d0, perf_sd: 1.2 };
   function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   function normal(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
-  const gain = d => cal.rate * Math.max(0, d - cal.d0);
-  const actualReg = {}, actualSemis = {};
-  cur.forEach(r => { if (r.round === "Regional") actualReg[r.school] = r.total; if (r.round === "State Semifinals") actualSemis[r.school] = r.total; });
-  const statewide = (cfg.qualifying_mode || "statewide") === "statewide";
-  const state = { metro: statewide ? cfg.state_qualifiers : (cfg.state_spots_by_region[focusRegion] || 5), finals: cfg.finals_spots, drop: new Set() };
-  const N = 8000;
-  document.getElementById("nsims").textContent = N.toLocaleString();
+  const ord = n => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
+  const sgn = (v, d = 2) => (v > 0 ? "+" : v < 0 ? "−" : "±") + Math.abs(v).toFixed(d);
+  const FIELD = INS.field || [];
+  const ratingOf = Object.fromEntries((INS.ratings || []).map(r => [r.school, r]));
 
+  // ---------- 4. finals race (same model as cba_insights.simulate_state, run live)
+  const state = { finals: cfg.finals_spots, boost: 0, drop: new Set() };
+  const NSIM = 6000;
+  const Z = (() => { const r = rng(42), k = FIELD.length, z = new Float64Array(NSIM * k * 2); for (let i = 0; i < z.length; i++) z[i] = normal(r); return z; })();
   function simulate() {
-    const field = DATA.projections.filter(p => !state.drop.has(p.school));
-    const spots = { ...cfg.state_spots_by_region, [focusRegion]: state.metro };
-    const k = field.length, r = rng(7), panel = cal.s0;
-    const hits = field.map(() => ({ st: 0, fi: 0, first: 0 }));
-    const regDays = field.map(p => daysBetween(cfg.regional_dates[p.region] || cfg.state_semis_date, cfg.state_semis_date));
-    const haveSemis = Object.keys(actualSemis).length > 0;
-    for (let n = 0; n < N; n++) {
-      const level = field.map(p => p.proj_semis + p.proj_sd * normal(r));
-      const reg = field.map((p, j) => p.school in actualReg ? actualReg[p.school] : level[j] - gain(regDays[j]) + panel * normal(r));
-      const q = new Array(k).fill(false);
-      if (haveSemis) field.forEach((p, j) => q[j] = p.school in actualSemis);
-      else if (statewide) {
-        field.map((_, j) => j).sort((a, b) => reg[b] - reg[a]).slice(0, state.metro).forEach(j => q[j] = true);
-      } else {
-        const byReg = {};
-        field.forEach((p, j) => (byReg[p.region || "?"] ||= []).push(j));
-        for (const g in byReg) { const take = spots[g] ?? byReg[g].length; byReg[g].sort((a, b) => reg[b] - reg[a]).slice(0, take).forEach(j => q[j] = true); }
-      }
-      const semis = field.map((p, j) => p.school in actualSemis ? actualSemis[p.school] : level[j] + 0.5 * panel * normal(r));
-      const ranked = field.map((_, j) => j).filter(j => q[j]).sort((a, b) => semis[b] - semis[a]);
-      ranked.forEach((j, i) => { hits[j].st++; if (i < state.finals) hits[j].fi++; if (i === 0) hits[j].first++; });
+    const k = FIELD.length, L = INS.chol, mu = INS.mu, sd = INS.perf_sd, fi = FIELD.indexOf(FOCUS);
+    const active = FIELD.map(b => !state.drop.has(b));
+    const counts = FIELD.map(() => new Array(k).fill(0)), score = new Float64Array(k);
+    const idx = [...Array(k).keys()].filter(i => active[i]);
+    for (let n = 0; n < NSIM; n++) {
+      const base = n * k * 2;
+      for (let i = 0; i < k; i++) { let v = mu[i]; for (let j = 0; j <= i; j++) v += L[i][j] * Z[base + j]; score[i] = v + sd * Z[base + k + i] + (i === fi ? state.boost : 0); }
+      idx.slice().sort((a, b) => score[b] - score[a]).forEach((i, r) => counts[i][r]++);
     }
-    return field.map((p, j) => ({ ...p, p_state: hits[j].st / N, p_finals: hits[j].fi / N, p_first: hits[j].first / N }))
-                .sort((a, b) => b.proj_semis - a.proj_semis);
+    const m = idx.length;
+    return FIELD.map((b, i) => ({ school: b, active: active[i], strength: mu[i], dist: counts[i].slice(0, m).map(c => c / NSIM) }))
+      .filter(r => r.active).sort((a, b) => b.strength - a.strength)
+      .map(r => ({ ...r, p_finals: r.dist.slice(0, state.finals).reduce((s, v) => s + v, 0) }));
   }
-
-  function pb(v) { return `<div class="pbar"><span class="mono">${pct(v)}</span><span class="track"><span class="fill" style="width:${(v * 100).toFixed(1)}%;display:block"></span></span></div>`; }
-  function drawOdds() {
-    document.getElementById("metroOut").value = state.metro; document.getElementById("finOut").value = state.finals;
-    const rows = simulate();
-    const t = document.getElementById("odds");
-    t.innerHTML = `<thead><tr><th>Band</th><th class="hide-sm">Regional</th><th class="hide-sm">Based on</th><th class="num hide-sm">Latest</th><th class="num">Projected semis</th><th>Make State</th><th>Make finals</th></tr></thead><tbody>` +
-      rows.map(p => `<tr class="${p.school === FOCUS ? "is-focus" : ""}"><td>${short(p.school)}${p.basis === "last season" ? " *" : ""}</td><td class="hide-sm">${p.region || "–"}</td>
-        <td class="hide-sm"><span class="basis ${p.basis === "last season" ? "carry" : ""}">${p.basis === "this season" ? SEASON + " scores" : SEASON - 1 + " results"}</span></td>
-        <td class="num hide-sm">${fmt(p.last_score)}</td><td class="num">${fmt(p.proj_semis, 1)} <span style="color:var(--muted)">± ${fmt(p.proj_sd, 1)}</span></td>
-        <td>${pb(p.p_state)}</td><td>${pb(p.p_finals)}</td></tr>`).join("") + "</tbody>";
-    const f = rows.find(p => p.school === FOCUS);
-    drawBoard(f, rows);
+  function heatColor(p) { return `color-mix(in oklab, var(--heat-hi) ${Math.round(Math.sqrt(p) * 100)}%, var(--heat-lo))`; }
+  function drawRace() {
+    document.getElementById("finOut").value = state.finals;
+    document.getElementById("boostOut").value = state.boost === 0 ? "±0.00" : sgn(state.boost);
+    const t = document.getElementById("heat");
+    if (!FIELD.length) { t.innerHTML = "<tr><td>No State field yet.</td></tr>"; return; }
+    const rows = simulate(), m = rows.length;
+    let h = `<thead><tr><th class="band">Band</th>` + rows.map((_, i) => `<th class="${i === state.finals ? "line" : ""}">${ord(i + 1)}</th>`).join("") + `<th>Finals</th></tr></thead><tbody>`;
+    rows.forEach(r => {
+      h += `<tr class="${r.school === FOCUS ? "is-focus" : ""}"><td class="band">${short(r.school)}</td>` +
+        r.dist.map((p, i) => `<td class="${i === state.finals ? "line" : ""}" style="background:${heatColor(p)};color:${p > 0.35 ? "var(--heat-ink)" : "var(--ink)"}" title="${short(r.school)} ${ord(i + 1)}: ${pct(p)}">${p >= 0.03 ? Math.round(p * 100) : ""}</td>`).join("") +
+        `<td class="pf">${pct(r.p_finals)}</td></tr>`;
+    });
+    t.innerHTML = h + "</tbody>";
+    const f = rows.find(r => r.school === FOCUS);
+    const bubble = rows.filter(r => r.p_finals > 0.08 && r.p_finals < 0.95).map(r => short(r.school));
+    document.getElementById("raceSub").textContent = `Chance of finishing in each place at State semifinals, from ${NSIM.toLocaleString()} simulated State days. Field: ${INS.field_basis}. ` +
+      (bubble.length ? `The last finals spots are a race between ${bubble.slice(0, -1).join(", ")}${bubble.length > 1 ? " and " : ""}${bubble[bubble.length - 1]}.` : "");
+    if (f) {
+      const best = f.dist.indexOf(Math.max(...f.dist));
+      document.getElementById("heatNote").textContent = `Numbers are percent; each row adds up to 100. The dashed line is the finals cut. ${short(FOCUS)} makes finals in ${pct(f.p_finals)} of runs, most often finishing ${ord(best + 1)} (${pct(f.dist[best])}). Use the slider to see what a stronger or weaker State-day performance does: each half point is worth about ${Math.round(halfPointValue() * 100)} points of finals chance.`;
+    }
+    drawBoard(rows);
   }
-
-  function drawBoard(f, rows) {
+  function halfPointValue() {
+    const b = INS.boost || []; const at = v => (b.find(x => Math.abs(x.boost - v) < 1e-6) || {}).p_finals;
+    return at(0.5) != null && at(0) != null ? at(0.5) - at(0) : 0;
+  }
+  function drawBoard(rows) {
     const b = document.getElementById("board");
-    const scored = latest.findIndex(r => r.school === FOCUS);
-    const projRank = rows.findIndex(r => r.school === FOCUS) + 1;
+    const f = rows.find(r => r.school === FOCUS);
+    const rank = rows.findIndex(r => r.school === FOCUS) + 1;
+    const fr = ratingOf[FOCUS];
+    const best = f ? f.dist.indexOf(Math.max(...f.dist)) : -1;
     b.innerHTML = `
-      <div><span class="eyebrow">Latest score</span><span class="v">${fl ? fmt(fl.total) : "–"}</span><span class="n">${fl ? fl.event.replace(/ Marching/, "") + ", " + dfmt(fl.event_date) : "no score yet"}</span></div>
-      <div><span class="eyebrow">3A rank, last known</span><span class="v">${scored >= 0 ? "#" + (scored + 1) : "–"}<span style="font-size:1.2rem;color:var(--muted)"> of ${latest.length}</span></span><span class="n">among bands with a ${SEASON} score</span></div>
-      <div><span class="eyebrow">Chance to make State</span><span class="v">${f ? pct(f.p_state) : "–"}</span><span class="n">${statewide ? `top ${state.metro} of ${DATA.projections.length - state.drop.size} 3A regional scores` : `top ${state.metro} from ${focusRegion} regional`}</span></div>
-      <div><span class="eyebrow">Chance to make finals</span><span class="v">${f ? pct(f.p_finals) : "–"}</span><span class="n">top ${state.finals} at semis · projected #${projRank}</span></div>`;
+      <div><span class="eyebrow">Chance to make finals</span><span class="v">${f ? pct(f.p_finals) : "–"}</span><span class="n">top ${state.finals} of ${rows.length} at State semis${state.boost ? ` · with ${sgn(state.boost)} on State day` : ""}</span></div>
+      <div><span class="eyebrow">Neutral-panel rating</span><span class="v">${fr ? fr.strength.toFixed(1) : "–"}</span><span class="n">${rank ? ord(rank) + " of " + rows.length + " in the State field" : ""}</span></div>
+      <div><span class="eyebrow">Most likely place</span><span class="v">${best >= 0 ? ord(best + 1) : "–"}</span><span class="n">${best >= 0 ? pct(f.dist[best]) + " of simulated State days" : ""}</span></div>
+      <div><span class="eyebrow">Latest score</span><span class="v">${fl ? fmt(fl.total) : "–"}</span><span class="n">${fl ? fl.event.replace(/ Marching/, "") + ", " + dfmt(fl.event_date) : "no score yet"}</span></div>`;
   }
-
   function chips() {
     const c = document.getElementById("chips"); c.innerHTML = "";
-    DATA.projections.slice().sort((a, b) => a.school.localeCompare(b.school)).forEach(p => {
-      if (p.school === FOCUS) return;
-      const btn = document.createElement("button"); btn.type = "button"; btn.className = "chipbtn"; btn.id = "chip-" + p.school.replace(/\W/g, "");
-      btn.textContent = short(p.school) + (p.basis === "last season" ? " *" : "");
-      btn.setAttribute("aria-pressed", state.drop.has(p.school) ? "false" : "true");
-      btn.title = p.basis === "last season" ? "No score yet this season" : "";
-      btn.onclick = () => { state.drop.has(p.school) ? state.drop.delete(p.school) : state.drop.add(p.school); btn.setAttribute("aria-pressed", state.drop.has(p.school) ? "false" : "true"); drawOdds(); };
+    FIELD.slice().sort((a, b) => a.localeCompare(b)).forEach(s => {
+      if (s === FOCUS) return;
+      const btn = document.createElement("button"); btn.type = "button"; btn.className = "chipbtn"; btn.id = "chip-" + s.replace(/\W/g, "");
+      btn.textContent = short(s); btn.setAttribute("aria-pressed", "true");
+      btn.onclick = () => { state.drop.has(s) ? state.drop.delete(s) : state.drop.add(s); btn.setAttribute("aria-pressed", state.drop.has(s) ? "false" : "true"); drawRace(); };
       c.appendChild(btn);
     });
-    c.insertAdjacentHTML("beforeend", `<span class="note" style="align-self:center">* no ${SEASON} score yet</span>`);
   }
-  const regionCount = () => statewide ? DATA.projections.length - state.drop.size : DATA.projections.filter(p => p.region === focusRegion && !state.drop.has(p.school)).length;
-  document.getElementById("metroDown").onclick = () => { state.metro = Math.max(1, state.metro - 1); drawOdds(); };
-  document.getElementById("metroUp").onclick = () => { state.metro = Math.min(Math.max(regionCount(), 1), state.metro + 1); drawOdds(); };
-  document.getElementById("finDown").onclick = () => { state.finals = Math.max(1, state.finals - 1); drawOdds(); };
-  document.getElementById("finUp").onclick = () => { state.finals = Math.min(10, state.finals + 1); drawOdds(); };
+  document.getElementById("finDown").onclick = () => { state.finals = Math.max(1, state.finals - 1); drawRace(); };
+  document.getElementById("finUp").onclick = () => { state.finals = Math.min(FIELD.length - 1, state.finals + 1); drawRace(); };
+  document.getElementById("boost").oninput = e => { state.boost = +e.target.value; drawRace(); };
+
+  // ---------- 5. neutral-panel ratings
+  function drawRatings() {
+    const host = document.getElementById("ratings"); host.innerHTML = "";
+    const rows = (INS.ratings || []).slice().sort((a, b) => b.strength - a.strength);
+    if (!rows.length) return;
+    const tip = tipper(host);
+    const W = Math.max(300, host.clientWidth), rowH = 26, top = 6, L = 112, R = 46, H = top + rows.length * rowH + 26;
+    const lo = Math.floor(Math.min(...rows.map(r => r.strength - r.strength_sd)) - 1);
+    const hi = Math.ceil(Math.max(...rows.map(r => r.strength + r.strength_sd)) + 0.5);
+    const x = v => L + (v - lo) / (hi - lo) * (W - L - R);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Neutral-panel ratings for 3A bands" }, host);
+    niceTicks(lo, hi, hi - lo > 16 ? 4 : 2).forEach(v => {
+      el("line", { x1: x(v), x2: x(v), y1: top, y2: H - 22, stroke: css("--grid") }, svg);
+      const t = el("text", { x: x(v), y: H - 6, "text-anchor": "middle", fill: css("--muted"), "font-size": 11, "font-family": "IBM Plex Mono, monospace" }, svg); t.textContent = v;
+    });
+    rows.forEach((r, i) => {
+      const y = top + i * rowH + rowH / 2, isF = r.school === FOCUS, inF = FIELD.includes(r.school);
+      const t = el("text", { x: L - 10, y: y + 4, "text-anchor": "end", fill: css(isF ? "--ink" : inF ? "--ink-2" : "--muted"), "font-size": 12.5, "font-weight": isF ? 700 : 400 }, svg);
+      t.textContent = short(r.school);
+      const raw = (latestBy[r.school] || {}).total;
+      el("line", { x1: x(r.strength - r.strength_sd), x2: x(r.strength + r.strength_sd), y1: y, y2: y, stroke: css(isF ? "--focus" : "--ink-2"), "stroke-opacity": isF ? 0.45 : 0.3, "stroke-width": 6, "stroke-linecap": "round" }, svg);
+      el("circle", { cx: x(r.strength), cy: y, r: isF ? 6 : 5, fill: css(isF ? "--focus" : inF ? "--ink-2" : "--other"), stroke: css("--surface"), "stroke-width": 2 }, svg);
+      const v = el("text", { x: x(r.strength + r.strength_sd) + 6, y: y + 4, fill: css("--ink"), "font-size": 11.5, "font-family": "IBM Plex Mono, monospace", "font-weight": isF ? 600 : 400 }, svg); v.textContent = r.strength.toFixed(1);
+      const hit = el("rect", { x: 0, y: y - rowH / 2, width: W, height: rowH, fill: "transparent" }, svg);
+      hit.addEventListener("mousemove", e => { const b = host.getBoundingClientRect(); tip.show(`${r.school}<br>Neutral-panel State level <b>${r.strength.toFixed(1)} ± ${r.strength_sd.toFixed(1)}</b><br>${r.n_scores} scores at ${r.n_shows} panels${raw ? ` · latest raw ${fmt(raw)}` : ""}${inF ? "" : "<br>not in the State field"}`, e.clientX - b.left, e.clientY - b.top); });
+      hit.addEventListener("mouseleave", tip.hide);
+    });
+    document.getElementById("ratLegend").innerHTML = `<span><i class="sw" style="background:var(--focus);height:8px;width:8px;border-radius:50%"></i>rating</span><span><i class="sw" style="background:var(--ink-2);opacity:.35;height:6px;width:18px"></i>likely range</span><span style="color:var(--muted)">gray names: not in the State field</span>`;
+  }
+
+  // ---------- 6. head to head
+  function drawH2H() {
+    const t = document.getElementById("h2h");
+    const pw = Object.fromEntries((INS.pairwise || []).map(r => [r.opponent, r.p_ahead]));
+    const fr = ratingOf[FOCUS]; if (!fr) { t.innerHTML = ""; return; }
+    const rivals = FIELD.filter(b => b !== FOCUS).sort((a, b) => (ratingOf[b] || {}).strength - (ratingOf[a] || {}).strength);
+    const meet = INS.h2h || [];
+    let h = `<thead><tr><th>Rival</th><th>Same-panel results</th><th class="hide-sm">Neutral gap</th><th class="num">Ahead at State</th></tr></thead><tbody>`;
+    rivals.forEach(b => {
+      const ms = meet.filter(m => m.opponent === b);
+      const gap = fr.strength - ratingOf[b].strength;
+      const w = Math.min(50, Math.abs(gap) / 6 * 50);
+      h += `<tr><td>${short(b)}</td><td>${ms.length ? ms.map(m => `<span class="mtg ${m.margin >= 0 ? "up" : "dn"}" title="${m.event} ${m.round}, ${dfmt(m.event_date)}: ${fmt(m.focus_score)} vs ${fmt(m.opp_score)}">${sgn(m.margin)} ${m.event.replace(/^Regional - /, "").replace(/ (Marching )?(Festival|Invitational)$/, "").replace(/ 1A-2A-3A| 2A-4A/, "")}${m.round === "Finals" ? " F" : ""}</span>`).join("") : '<span style="color:var(--muted)">never at the same show</span>'}</td>
+        <td class="hide-sm"><div style="display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center"><span class="mono">${sgn(gap, 1)}</span><div class="gapbar"><i style="left:${gap >= 0 ? 50 : 50 - w}%;width:${w}%;background:${gap >= 0 ? "var(--focus)" : "var(--div-neg)"}"></i></div></div></td>
+        <td class="num">${pw[b] != null ? pct(pw[b]) : "–"}</td></tr>`;
+    });
+    t.innerHTML = h + "</tbody>";
+  }
+
+  // ---------- 7. captions
+  const CAP = { mp: ["Music Performance", 20], vp: ["Visual Performance", 20], ge: ["General Effect", 60] };
+  let rival = null;
+  function rivalPicker() {
+    const sel = document.getElementById("rival");
+    const order = FIELD.filter(b => b !== FOCUS).sort((a, b) => ratingOf[b].strength - ratingOf[a].strength);
+    const fs = (ratingOf[FOCUS] || {}).strength;
+    rival = order.filter(b => ratingOf[b].strength > fs).pop() || order[0];
+    sel.innerHTML = order.map(b => `<option value="${b}" ${b === rival ? "selected" : ""}>${short(b)}</option>`).join("");
+    sel.onchange = () => { rival = sel.value; drawCaps(); };
+  }
+  function drawCaps() {
+    const g = document.getElementById("capgrid"); g.innerHTML = "";
+    const caps = INS.captions || [];
+    const get = (s, c) => caps.find(r => r.school === s && r.caption === c);
+    Object.entries(CAP).forEach(([c, [name, max]]) => {
+      const f = get(FOCUS, c), o = get(rival, c); if (!f || !o) return;
+      const fieldVals = FIELD.map(b => get(b, c)).filter(Boolean).sort((a, b) => b.strength - a.strength);
+      const rk = fieldVals.findIndex(r => r.school === FOCUS) + 1;
+      const d = f.strength - o.strength;
+      g.insertAdjacentHTML("beforeend", `<div class="capcard"><span class="eyebrow">${name} · out of ${max}</span>
+        <span class="big">${f.strength.toFixed(2)}</span>
+        <div class="row"><span>${short(rival)}</span><b>${o.strength.toFixed(2)}</b></div>
+        <div class="row"><span>Gap</span><b class="${d >= 0 ? "ok" : "miss"}">${sgn(d)}</b></div>
+        <div class="row"><span>${short(FOCUS)} rank in State field</span><b>${ord(rk)} of ${fieldVals.length}</b></div></div>`);
+    });
+  }
+  function drawCapTrend() {
+    const host = document.getElementById("capTrend"); host.innerHTML = "";
+    const rows = cur.filter(r => r.school === FOCUS && r.mp != null && ["Prelims", "Finals", "Regional"].includes(r.round))
+      .sort((a, b) => a.event_date.localeCompare(b.event_date) || (a.round === "Finals") - (b.round === "Finals"));
+    if (rows.length < 2) { host.textContent = "Not enough caption scores yet."; return; }
+    const tip = tipper(host);
+    const [W, H] = sizeOf(host, 0.34, 220);
+    const L = 40, R = 150, T = 12, B = 30;
+    const series = Object.entries(CAP).map(([c, [name, max]]) => ({ c, name, max, pts: rows.map(r => r[c] / max * 100) }));
+    const all = series.flatMap(s => s.pts);
+    const lo = Math.floor((Math.min(...all) - 2) / 5) * 5, hi = Math.ceil((Math.max(...all) + 2) / 5) * 5;
+    const x = i => L + i / (rows.length - 1) * (W - L - R), y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Caption scores by show" }, host);
+    niceTicks(lo, hi, 5).forEach(v => { el("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: css("--grid") }, svg); const t = el("text", { x: L - 6, y: y(v) + 4, "text-anchor": "end", fill: css("--muted"), "font-size": 11, "font-family": "IBM Plex Mono, monospace" }, svg); t.textContent = v + "%"; });
+    rows.forEach((r, i) => { const t = el("text", { x: x(i), y: H - 8, "text-anchor": "middle", fill: css("--muted"), "font-size": 10.5 }, svg); t.textContent = dfmt(r.event_date) + (r.round === "Finals" ? " F" : r.round === "Regional" ? " R" : ""); });
+    const ends = [];
+    series.forEach(s => {
+      const col = css("--cap-" + s.c);
+      el("polyline", { points: s.pts.map((v, i) => x(i) + "," + y(v)).join(" "), fill: "none", stroke: col, "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+      s.pts.forEach((v, i) => {
+        el("circle", { cx: x(i), cy: y(v), r: 4, fill: col, stroke: css("--surface"), "stroke-width": 2 }, svg);
+        const hit = el("circle", { cx: x(i), cy: y(v), r: 11, fill: "transparent" }, svg);
+        hit.addEventListener("mouseenter", () => tip.show(`${s.name}<br><b>${rows[i][s.c].toFixed(2)}</b> of ${s.max} (${v.toFixed(1)}%)<br>${rows[i].event}, ${rows[i].round}`, x(i) * host.clientWidth / W, y(v) * host.clientWidth / W));
+        hit.addEventListener("mouseleave", tip.hide);
+      });
+      ends.push({ s, yv: y(s.pts[s.pts.length - 1]) });
+    });
+    ends.sort((a, b) => a.yv - b.yv); for (let i = 1; i < ends.length; i++) if (ends[i].yv - ends[i - 1].yv < 14) ends[i].yv = ends[i - 1].yv + 14;
+    ends.forEach(e => { const t = el("text", { x: W - R + 10, y: e.yv + 4, fill: css("--ink-2"), "font-size": 11.5 }, svg); t.textContent = e.s.name; });
+    document.getElementById("capLegend").innerHTML = series.map(s => `<span><i class="sw" style="background:var(--cap-${s.c})"></i>${s.name}</span>`).join("") + `<span style="color:var(--muted)">F = finals, R = regional</span>`;
+  }
+
+  // ---------- 8. panel generosity
+  function drawPanels() {
+    const host = document.getElementById("panels"); host.innerHTML = "";
+    const rows = (INS.panels || []).filter(p => p.n_class_bands > 0).sort((a, b) => a.event_date.localeCompare(b.event_date) || a.round.localeCompare(b.round));
+    if (!rows.length) return;
+    const tip = tipper(host);
+    const W = Math.max(300, host.clientWidth), rowH = 24, top = 6, narrow = W < 480, L = narrow ? 150 : 200, R = 40, H = top + rows.length * rowH + 26;
+    const ext = Math.max(2, Math.ceil(Math.max(...rows.map(r => Math.abs(r.effect) + r.effect_sd))));
+    const x = v => L + (v + ext) / (2 * ext) * (W - L - R);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Judging panel generosity by show" }, host);
+    niceTicks(-ext, ext, ext > 3 ? 2 : 1).forEach(v => { el("line", { x1: x(v), x2: x(v), y1: top, y2: H - 22, stroke: css(v === 0 ? "--axis" : "--grid") }, svg); const t = el("text", { x: x(v), y: H - 6, "text-anchor": "middle", fill: css("--muted"), "font-size": 11, "font-family": "IBM Plex Mono, monospace" }, svg); t.textContent = v > 0 ? "+" + v : v; });
+    rows.forEach((r, i) => {
+      const y = top + i * rowH, mid = y + rowH / 2;
+      const name = r.event.replace(/^Regional - /, "Regional ").replace(/ (Marching )?(Festival|Invitational)$/, "");
+      const t = el("text", { x: L - 8, y: mid + 4, "text-anchor": "end", fill: css("--ink-2"), "font-size": 11.5 }, svg); t.textContent = `${name}${r.round === "Finals" ? " finals" : ""} · ${dfmt(r.event_date)}`;
+      const x0 = x(0), x1 = x(r.effect), col = css(r.effect >= 0 ? "--div-pos" : "--div-neg");
+      el("rect", { x: Math.min(x0, x1), y: y + 6, width: Math.max(2, Math.abs(x1 - x0)), height: rowH - 12, rx: 3, fill: col }, svg);
+      el("line", { x1: x(r.effect - r.effect_sd), x2: x(r.effect + r.effect_sd), y1: mid, y2: mid, stroke: css("--ink-2"), "stroke-width": 1.2 }, svg);
+      const hit = el("rect", { x: 0, y, width: W, height: rowH, fill: "transparent" }, svg);
+      hit.addEventListener("mousemove", e => { const b = host.getBoundingClientRect(); tip.show(`${r.event} (${r.round})<br><b>${sgn(r.effect, 1)}</b> points vs a neutral panel (± ${r.effect_sd.toFixed(1)})<br>${r.n_bands} bands scored, ${r.n_class_bands} in 3A`, e.clientX - b.left, e.clientY - b.top); });
+      hit.addEventListener("mouseleave", tip.hide);
+    });
+    const lt = el("text", { x: x(-ext) , y: top + 2, fill: css("--muted"), "font-size": 10.5 }, svg); lt.textContent = "tougher";
+    const rt = el("text", { x: x(ext), y: top + 2, "text-anchor": "end", fill: css("--muted"), "font-size": 10.5 }, svg); rt.textContent = "more generous";
+  }
+
+  // ---------- 9. track record
+  function drawBacktest() {
+    const s = INS.backtest_summary || {}, a = s["panel-adjusted"], o = s["original"];
+    const k = document.getElementById("btKpis");
+    if (a && o) k.innerHTML = `<span>Average miss <b>${a.rmse.toFixed(2)}</b> points (original method ${o.rmse.toFixed(2)})</span><span>Band pairs in the right order <b>${Math.round(a.pairs_right * 100)}%</b> (was ${Math.round(o.pairs_right * 100)}%)</span><span style="color:var(--muted)">${a.n} State semifinal results, all classes</span>`;
+    const rows = (INS.backtest_class || []).filter(r => r.model === "panel-adjusted").sort((a, b) => b.season - a.season || a.actual_rank - b.actual_rank);
+    const t = document.getElementById("bt");
+    let h = `<thead><tr><th>Season</th><th>Band</th><th class="num">Predicted</th><th class="num">Actual</th><th class="num">Place called</th></tr></thead><tbody>`;
+    rows.forEach(r => {
+      const right = Math.round(r.pred_rank) === Math.round(r.actual_rank);
+      h += `<tr class="${r.school === FOCUS ? "is-focus" : ""}"><td>${r.season}</td><td>${short(r.school)}</td><td class="num">${ord(Math.round(r.pred_rank))}</td><td class="num">${ord(Math.round(r.actual_rank))}</td><td class="num ${right ? "ok" : "miss"}">${right ? "✓" : "off by " + Math.abs(Math.round(r.pred_rank - r.actual_rank))}</td></tr>`;
+    });
+    t.innerHTML = h + "</tbody>";
+    document.getElementById("btNote").textContent = btSummaryText();
+  }
+
+  function btSummaryText() {
+    const rows = (INS.backtest_class || []).filter(r => r.model === "panel-adjusted");
+    return [...new Set(rows.map(r => r.season))].sort().reverse().map(s => {
+      const g = rows.filter(r => r.season === s), exact = g.filter(r => Math.round(r.pred_rank) === Math.round(r.actual_rank)).length;
+      const sp = cfg.finals_spots, pf = new Set(g.filter(r => r.pred_rank <= sp).map(r => r.school)), af = g.filter(r => r.actual_rank <= sp).map(r => r.school);
+      const hit = af.filter(b => pf.has(b)).length;
+      return `In ${s} it put ${exact} of ${g.length} 3A bands in their exact place and ${hit} of ${sp} finalists in its top ${sp}.`;
+    }).join(" ");
+  }
 
   // ---------- method notes
-  const shift = DATA.info.season_shift;
-  document.getElementById("method").innerHTML = [
-    `Bands improve through the season. Last year's data says a band gains about <b>${(cal.rate * 7).toFixed(1)} points a week</b> until roughly ${cal.d0} days before State, and a projection made from one score lands within about <b>±${cal.s0.toFixed(1)}</b> points of the real semifinals score two times out of three (fit on ${cal.n_pairs} score pairs).`,
-    `Bands with more than one score this season get a weighted blend of their projections, leaning on the scores closest to State.`,
-    `Returning bands are running <b>${Math.abs(shift).toFixed(1)} points ${shift < 0 ? "behind" : "ahead of"}</b> where they finished last year (projected). Bands with no ${SEASON} score start from last year's semifinals score shifted by that amount, with a wider range.`,
-    `The 2026 CBA classification has <b>${cfg.class_size || DATA.projections.length} bands in 3A, ${cfg.state_qualifiers} qualify for State and ${cfg.finals_spots} make finals</b>. CBA rules say qualifiers are chosen from regional scores. In 2024 and 2025 the bands that missed State were the lowest regional scores statewide, no matter which regional they went to, so the model ranks all 3A regional scores together.`,
-    `D'Evelyn's enrollment is in the 2A range and Pueblo Central's is in the 4A range, but both are classified 3A for 2026 and are counted in the field.`,
-    `Once regionals and State post, the real scores replace the simulated ones and the odds lock in.`
-  ].map(s => `<li>${s}</li>`).join("");
+  function drawMethod() {
+    const a = (INS.backtest_summary || {})["panel-adjusted"];
+    document.getElementById("method").innerHTML = [
+      `<b>Panels differ.</b> Each show has its own judges, and some score higher than others. Many bands (all classes, not just 3A) go to several shows, so the model can work out how generous each panel was and take that out. That puts every band on one neutral scale, even bands that never met.`,
+      `<b>Bands improve.</b> Past seasons say a band gains about <b>${(P.G * 7).toFixed(1)} points a week</b> until a few days before State. Each band can run a little faster or slower than that, but it takes several scores to show it, so the model is careful about calling a band a fast riser.`,
+      `<b>At State, everyone faces the same panel.</b> Whether the State judges score high or low doesn't change who finishes 4th, so only the neutral-scale ratings and how each band performs that day matter. State-day wobble is set to ±${P.perf_sd.toFixed(1)} points, the amount that made past predictions land inside their ranges as often as they should.`,
+      a ? `<b>Checked against history.</b> Run on past seasons using only scores from before State, it missed real semifinal scores by ${a.rmse.toFixed(1)} points on average and put ${Math.round(a.pairs_right * 100)}% of band pairs in the right order, better than the original method on both. ${btSummaryText()}` : "",
+      `<b>Captions.</b> The same model run separately on Music Performance, Visual Performance and General Effect. The three caption ratings add up to the overall rating, so you can see where the gap to a rival comes from.`,
+      `<b>The State field</b> is the top ${cfg.state_qualifiers} regional scores statewide until CBA posts the semifinals lineup; then the real lineup and, after State, the real results take over.`
+    ].filter(Boolean).map(s => `<li>${s}</li>`).join("");
+  }
 
-  function all() { drawLatest(); drawWeekly(); drawTrend(); }
-  chips(); drawOdds(); all();
+  function all() { drawLatest(); drawWeekly(); drawTrend(); drawRatings(); drawCapTrend(); drawPanels(); }
+  chips(); rivalPicker(); drawRace(); drawH2H(); drawCaps(); drawBacktest(); drawMethod(); all();
   let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(all, 150); });
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", all);
   new MutationObserver(all).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });

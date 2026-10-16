@@ -1,14 +1,14 @@
-school,region,basis,last_score,last_event,last_date,proj_semis,proj_sd,p_state,p_finals,p_first,median_semis_rank,p_state_if_one_fewer_spot
-Pueblo County HS,Southern,this season,70.9,Regional - South 1A-2A-3A,2026-10-14,73.79960000000001,2.941,1.0,0.9444,0.53215,1.0,1.0
-D'Evelyn HS,Metro,this season,69.65,Regional - 2A-4A Metro,2026-10-13,71.01400000000001,2.941,1.0,0.7784,0.18515,3.0,1.0
-Windsor HS,Northern,this season,65.05,Regional - North 1A-2A-3A,2026-10-12,69.99173333333333,2.941,1.0,0.66195,0.10605,4.0,1.0
-Palisade HS,Western,this season,66.7,Regional - West,2026-10-15,69.3916,2.941,1.0,0.59435,0.08245,4.0,1.0
-Standley Lake HS,Metro,this season,65.45,Regional - 2A-4A Metro,2026-10-13,68.8253,2.941,1.0,0.52075,0.0607,4.0,1.0
-Evergreen HS,Metro,this season,65.75,Regional - 2A-4A Metro,2026-10-13,67.61399999999999,2.941,1.0,0.3651,0.0306,5.0,1.0
-Canon City HS,Southern,this season,56.85,Regional - South 1A-2A-3A,2026-10-14,63.23586666666665,2.941,1.0,0.04935,0.00125,8.0,1.0
-Harrison HS,Southern,this season,62.1,Regional - South 1A-2A-3A,2026-10-14,62.971999999999994,2.941,1.0,0.0418,0.00115,8.0,1.0
-Green Mountain HS,Metro,this season,59.15,Regional - 2A-4A Metro,2026-10-13,62.7264,2.941,1.0,0.03515,0.0004,8.0,1.0
-Conifer HS,Metro,this season,56.8,Regional - 2A-4A Metro,2026-10-13,60.60386666666666,2.941,1.0,0.00875,0.0001,9.0,0.0
-Wheat Ridge HS,Metro,this season,56.05,Regional - 2A-4A Metro,2026-10-13,59.2132,2.941,0.0,0.0,0.0,,0.0
-Pueblo Central,Southern,this season,55.75,Regional - South 1A-2A-3A,2026-10-14,58.369600000000005,2.941,0.0,0.0,0.0,,0.0
-Pueblo East HS,Southern,this season,51.1,Regional - South 1A-2A-3A,2026-10-14,54.626799999999996,2.941,0.0,0.0,0.0,,0.0
+school,region,basis,last_score,last_event,last_date,proj_semis,proj_sd,p_state,p_finals,p_first,median_semis_rank,p_state_if_one_fewer_spot,in_state_field,strength,strength_sd,p_finals_original
+Pueblo County HS,Southern,this season,70.9,Regional - South 1A-2A-3A,2026-10-14,73.79960000000001,2.941,1.0,0.99915,0.88345,1.0,1.0,True,74.72358729251354,1.665540051500114,0.9444
+D'Evelyn HS,Metro,this season,69.65,Regional - 2A-4A Metro,2026-10-13,71.01400000000001,2.941,1.0,0.97225,0.09375,3.0,1.0,True,71.42462419662814,1.1591934127818537,0.7784
+Palisade HS,Western,this season,66.7,Regional - West,2026-10-15,69.3916,2.941,1.0,0.6926,0.01435,4.0,1.0,True,69.19905498837642,1.4462242199257311,0.59435
+Windsor HS,Northern,this season,65.05,Regional - North 1A-2A-3A,2026-10-12,69.99173333333333,2.941,1.0,0.6645,0.00675,4.0,1.0,True,68.988515650946,1.2312182787787729,0.66195
+Standley Lake HS,Metro,this season,65.45,Regional - 2A-4A Metro,2026-10-13,68.8253,2.941,1.0,0.42475,0.0013,4.0,1.0,True,68.11550458697056,1.1802695698001866,0.52075
+Evergreen HS,Metro,this season,65.75,Regional - 2A-4A Metro,2026-10-13,67.61399999999999,2.941,1.0,0.21765,0.0004,5.0,1.0,True,67.24043597330805,1.1307435495888818,0.3651
+Harrison HS,Southern,this season,62.1,Regional - South 1A-2A-3A,2026-10-14,62.971999999999994,2.941,1.0,0.0289,0.0,8.0,1.0,True,65.08825434594061,1.3645759078902984,0.0418
+Canon City HS,Southern,this season,56.85,Regional - South 1A-2A-3A,2026-10-14,63.23586666666665,2.941,1.0,0.0001,0.0,8.0,1.0,True,61.87058481513816,1.114710057641396,0.04935
+Green Mountain HS,Metro,this season,59.15,Regional - 2A-4A Metro,2026-10-13,62.7264,2.941,1.0,0.0001,0.0,8.0,1.0,True,61.46077638815635,1.424222078457757,0.03515
+Conifer HS,Metro,this season,56.8,Regional - 2A-4A Metro,2026-10-13,60.60386666666666,2.941,1.0,0.0,0.0,9.0,0.0,True,59.45331453209221,1.1938916825386658,0.00875
+Pueblo Central,Southern,this season,55.75,Regional - South 1A-2A-3A,2026-10-14,58.369600000000005,2.941,0.0,0.0,0.0,,0.0,False,58.917989024363266,1.427590542467212,0.0
+Wheat Ridge HS,Metro,this season,56.05,Regional - 2A-4A Metro,2026-10-13,59.2132,2.941,0.0,0.0,0.0,,0.0,False,57.74903537385697,1.6471619471901178,0.0
+Pueblo East HS,Southern,this season,51.1,Regional - South 1A-2A-3A,2026-10-14,54.626799999999996,2.941,0.0,0.0,0.0,,0.0,False,54.02701318497952,1.2701662254989643,0.0

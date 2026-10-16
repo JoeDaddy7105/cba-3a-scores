@@ -23,6 +23,7 @@ from pathlib import Path
 
 import pandas as pd
 
+import cba_insights as I
 import cba_model as M
 import cba_scraper as S
 
@@ -98,6 +99,24 @@ def main():
     # sensitivity: what if one fewer band qualifies for State
     tight = M.simulate(proj, scores, cfg, cal, qualifiers=int(cfg.get("state_qualifiers", len(proj))) - 1)
     sim["p_state_if_one_fewer_spot"] = sim["school"].map(tight.set_index("school")["p_state"])
+    # panel-adjusted model (cba_insights): better at predicting State in 2024-2025 backtests,
+    # so it supplies the finals odds; the original model still supplies P(state) before regionals
+    ins = I.run_insights(scores, cfg, as_of=as_of.isoformat())
+    if ins:
+        fin = ins["finals"].set_index("school")
+        sim["in_state_field"] = sim["school"].isin(ins["field"])
+        sim["strength"] = sim["school"].map(ins["ratings"].set_index("school")["strength"])
+        sim["strength_sd"] = sim["school"].map(ins["ratings"].set_index("school")["strength_sd"])
+        sim["p_finals_original"] = sim["p_finals"]
+        sim["p_finals"] = sim["school"].map(fin["p_finals"]).fillna(0.0)
+        sim["p_first"] = sim["school"].map(fin["p_first"]).fillna(0.0)
+        if "regional" in ins["field_basis"] or "semifinals" in ins["field_basis"]:
+            sim["p_state"] = sim["in_state_field"].astype(float)
+        sim = sim.sort_values(["p_finals", "strength"], ascending=False).reset_index(drop=True)
+        write_insights(ins, cfg)
+    bt = I.run_backtests(scores, cfg)
+    if len(bt):
+        bt.to_csv(DATA / "backtest.csv", index=False)
     sim.to_csv(DATA / "projections.csv", index=False)
 
     cur = scores[(scores["season"] == season) & (scores["class"] == cls)]
@@ -119,14 +138,57 @@ def main():
             "yoy_sd": proj.attrs.get("yoy_sd"), "config": cfg}
     (DATA / "model_info.json").write_text(json.dumps(info, indent=2, default=str))
 
+    info["insights"] = insights_payload(ins, bt, cfg) if ins else None
     render_dashboard(scores, sim, snap, fh, info)
     write_update_summary(scores, old_keys, sim, old_proj, latest, cfg)
     f = sim[sim["school"] == focus]
     if len(f):
         r = f.iloc[0]
-        print(f"\n{focus}: projected semis {r.proj_semis:.1f} ± {r.proj_sd:.1f} | "
+        print(f"\n{focus}: neutral-panel rating {r.get('strength', r.proj_semis):.1f} | "
               f"P(state) {r.p_state:.0%} | P(finals) {r.p_finals:.0%}")
     print("Outputs written to", DATA)
+
+
+def write_insights(ins, cfg):
+    ins["ratings"].to_csv(DATA / "ratings.csv", index=False)
+    ins["finals"].drop(columns="rank_dist").to_csv(DATA / "finals_odds.csv", index=False)
+    ins["panels"].to_csv(DATA / "panel_effects.csv", index=False)
+    ins["class_obs"].to_csv(DATA / "adjusted_scores.csv", index=False)
+    if len(ins["captions"]):
+        ins["captions"].to_csv(DATA / "caption_ratings.csv", index=False)
+    if len(ins["h2h"]):
+        ins["h2h"].to_csv(DATA / "head_to_head.csv", index=False)
+    ins["pairwise"].to_csv(DATA / "pairwise.csv", index=False)
+    ins["boost"].to_csv(DATA / "finals_vs_boost.csv", index=False)
+
+
+def insights_payload(ins, bt, cfg):
+    """Compact, JSON-safe version of the insights for the dashboard."""
+    def recs(df, cols=None):
+        if df is None or len(df) == 0:
+            return []
+        d = df[cols] if cols else df
+        return json.loads(d.to_json(orient="records"))
+    fin = ins["finals"].copy()
+    fin["rank_dist"] = fin["rank_dist"].map(lambda a: [round(float(x), 4) for x in a])
+    summary = {}
+    if len(bt):
+        for model, g in bt.groupby("model"):
+            summary[model] = {k: (round(v, 3) if isinstance(v, float) else v) for k, v in I.score_backtest(g).items()}
+    bt3 = bt[bt["class"] == cfg["focus_class"]] if len(bt) else bt
+    return {
+        "field": ins["field"], "field_basis": ins["field_basis"], "mu": ins["mu"], "chol": ins["chol"],
+        "perf_sd": ins["perf_sd"], "sigma": ins["sigma"], "params": ins["params"],
+        "ratings": recs(ins["ratings"], ["school", "strength", "strength_sd", "growth_per_week", "n_scores", "n_shows"]),
+        "finals": recs(fin, ["school", "strength", "strength_sd", "p_finals", "p_first", "p_top3", "median_rank", "rank_dist"]),
+        "pairwise": recs(ins["pairwise"]), "boost": recs(ins["boost"]),
+        "captions": recs(ins["captions"]),
+        "panels": recs(ins["panels"], ["event", "event_date", "round", "effect", "effect_sd", "n_bands", "n_class_bands"]),
+        "adjusted": recs(ins["class_obs"]),
+        "h2h": recs(ins["h2h"]),
+        "backtest_summary": summary,
+        "backtest_class": recs(bt3, ["season", "school", "pred", "actual", "pred_rank", "actual_rank", "model"]) if len(bt3) else [],
+    }
 
 
 def write_update_summary(scores, old_keys, sim, old_proj, latest, cfg):
@@ -170,7 +232,8 @@ def render_dashboard(scores, sim, snap, fh, info):
     payload = {
         "info": info,
         "scores": scores[scores["class"] == cfg["focus_class"]][
-            ["season", "event", "event_date", "round", "school", "total", "class_place", "source"]].to_dict("records"),
+            ["season", "event", "event_date", "round", "school", "total", "class_place", "source"]
+            + [c for c in ("mp", "vp", "ge") if c in scores.columns]].to_dict("records"),
         "projections": sim.fillna("").to_dict("records"),
         "snapshot": snap.to_dict("records"),
         "focus_history": fh[["season", "event", "event_date", "round", "total", "days_before_state"]].to_dict("records"),

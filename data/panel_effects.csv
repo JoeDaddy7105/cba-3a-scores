@@ -1,0 +1,20 @@
+panel,effect,effect_sd,event_date,event,round,n_bands,n_class_bands
+2026-09-19|Legend Marching Festival|Prelims,0.161415263561139,0.6105142926561681,2026-09-19,Legend Marching Festival,Prelims,23,4
+2026-09-26|Colorado West Festival|Finals,-0.29335770295847396,0.9439391357784283,2026-09-26,Colorado West Festival,Finals,11,1
+2026-09-26|Colorado West Festival|Prelims,-0.3491399923848917,0.9412031558413384,2026-09-26,Colorado West Festival,Prelims,12,1
+2026-09-26|Legacy Marching Festival|Finals,-2.0786972610125076,0.6720549281823401,2026-09-26,Legacy Marching Festival,Finals,12,0
+2026-09-26|Legacy Marching Festival|Prelims,-3.2050077399821646,0.5852327213373928,2026-09-26,Legacy Marching Festival,Prelims,25,2
+2026-10-03|DCMI Marching Festival|Finals,0.46106397894644147,0.6717654500287112,2026-10-03,DCMI Marching Festival,Finals,11,1
+2026-10-03|DCMI Marching Festival|Prelims,-0.5459345147453405,0.6266836289333501,2026-10-03,DCMI Marching Festival,Prelims,17,1
+2026-10-03|Lakewood Marching Festival|Finals,0.41149789487144517,0.6585350704938134,2026-10-03,Lakewood Marching Festival,Finals,12,3
+2026-10-03|Lakewood Marching Festival|Prelims,0.3871205409031404,0.603869097119283,2026-10-03,Lakewood Marching Festival,Prelims,21,4
+2026-10-10|Harrison Marching Festival|Finals,2.2646989539522338,0.6532067230147356,2026-10-10,Harrison Marching Festival,Finals,13,1
+2026-10-10|Harrison Marching Festival|Prelims,1.7467660612427096,0.6236910954953994,2026-10-10,Harrison Marching Festival,Prelims,19,2
+2026-10-10|Monarch Marching Festival|Prelims,-0.12403063221543675,0.6264354739467509,2026-10-10,Monarch Marching Festival,Prelims,17,1
+2026-10-12|Regional - North 1A-2A-3A|Regional,0.4339563907028321,0.98950830157423,2026-10-12,Regional - North 1A-2A-3A,Regional,8,1
+2026-10-12|Regional - North 4A-5A|Regional,1.717553520875441,0.6895965140445554,2026-10-12,Regional - North 4A-5A,Regional,12,0
+2026-10-13|Regional - 2A-4A Metro|Regional,1.0046135038817852,0.6680591753133903,2026-10-13,Regional - 2A-4A Metro,Regional,16,6
+2026-10-14|Regional - South 1A-2A-3A|Regional,-1.3985996376512162,0.7334700038694462,2026-10-14,Regional - South 1A-2A-3A,Regional,15,5
+2026-10-14|Regional - South 4A-5A|Regional,0.6241417810054486,0.6585173844938828,2026-10-14,Regional - South 4A-5A,Regional,13,0
+2026-10-15|Regional - 5A Metro|Regional,-1.0135309353804018,0.6794536183309877,2026-10-15,Regional - 5A Metro,Regional,12,0
+2026-10-15|Regional - West|Regional,-0.1531722769923931,0.995362308642924,2026-10-15,Regional - West,Regional,12,1

@@ -42,7 +42,7 @@ SCRAPED_FIELDS = [
 MANIFEST_FIELDS = ["pdf_url", "season", "section", "label", "status", "rows", "event", "event_date",
                    "parser", "checked_at"]
 # bump when parsing changes; PDFs parsed by an older version get re-read on the next run
-PARSER_VERSION = "3"
+PARSER_VERSION = "4"
 # value positions in a standard CBA recap row (each value is followed by its rank):
 # Music Perf: Individual (a, b, tot), Ensemble (a, b, tot), subtotal
 # Visual Perf: Individual (a, b, tot), Ensemble (a, b, tot), subtotal
@@ -224,7 +224,7 @@ def parse_recap(pdf_bytes: bytes, aliases: dict[str, str]) -> tuple[dict, list[d
                 meta["location"] = lines[i - 1]
             # event name is the nearest line above the location that isn't page furniture
             for j in range(i - 2, -1, -1):
-                if not re.search(r"print|back to top|secure recap|highlights|^key$|verified|missing scores",
+                if not re.search(r"print|back to top|secure recap|highlights|^key$|verified|missing scores|^class [1-5]a$|^open class$",
                                  lines[j], re.I):
                     meta["event"] = lines[j]
                     break

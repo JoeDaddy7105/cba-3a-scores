@@ -10,6 +10,7 @@ Built around Standley Lake HS, but the focus school and class are settings in `c
 |---|---|
 | `update.py` | The one command to run. Scrapes new PDFs, rebuilds every output and `dashboard.html`. |
 | `cba_scraper.py` | Finds recap PDF links, downloads only new ones, parses band scores. |
+| `cba_insights.py` | Panel-adjusted ratings: takes each judging panel's generosity out, fits growth, runs the State/finals simulation, head-to-head, caption ratings and backtests. |
 | `cba_model.py` | Fits the improvement curve from last season, projects scores, runs the State/finals simulation. |
 | `config.json` | Season, focus school, State and regional dates, State spots per regional, finals spots. |
 | `data/manual_scores.csv` | Hand-entered scores (2024 to 2026 3A, already filled in). Use it for any PDF that won't parse. |
@@ -66,6 +67,28 @@ seed data gets replaced automatically as the scraper picks things up.
 **Option B, your PC.** Put the folder in OneDrive, schedule `run_update.bat` in Task Scheduler,
 and point Power BI at the CSVs through the SharePoint/OneDrive connector (see the bottom of
 `queries.pq`). A plain local folder path works in Desktop but needs a gateway for Service refresh.
+
+## Panel-adjusted model (finals odds)
+
+Every show has its own judges, and some panels score higher than others. Bands of all classes go to
+several shows, which links the panels together, so `cba_insights.py` estimates how generous each panel
+was and puts every band on one neutral scale:
+
+    score = band strength on State day - growth x days left + panel generosity + noise
+
+At State every 3A band faces the same panel, so that panel's own generosity cancels out of the ranking.
+The finals odds come from drawing band strengths from the model (with their uncertainty and how they
+are linked) plus a State-day performance wobble, thousands of times.
+
+Settings (in `cba_insights.DEFAULTS`, override in `config.json` under `panel_model`) were picked by
+backtesting on the 2024 and 2025 State semifinals, all classes, using only scores from before State.
+Compared with the original method it cut the average miss on semifinal scores from about 2.1 to 1.7
+points and put more band pairs in the right order. The ±1.2 point State-day wobble was set so past
+predictions landed inside their ranges as often as they should. Results are in `data/backtest.csv`.
+
+New outputs: `ratings.csv`, `finals_odds.csv`, `panel_effects.csv`, `adjusted_scores.csv`,
+`caption_ratings.csv`, `head_to_head.csv`, `pairwise.csv`, `finals_vs_boost.csv`, `backtest.csv`.
+Scraped rows now include caption subtotals (`mp`, `vp`, `ge` and their parts).
 
 ## Alerts when new scores post
 
