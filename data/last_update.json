@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-10-16T23:44:27",
+  "run_at": "2026-10-16T23:48:53",
   "new_rows": 0,
   "new_events": [],
   "new_class_rows": [],
@@ -10,8 +10,8 @@
     "rank": 5,
     "of": 13,
     "p_state": 1.0,
-    "p_finals": 0.5221,
+    "p_finals": 0.52075,
     "prev_p_state": 1.0,
-    "prev_p_finals": 0.52125
+    "prev_p_finals": 0.5221
   }
 }
