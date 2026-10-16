@@ -1,16 +1,16 @@
 {
-  "run_at": "2026-10-16T17:41:12",
+  "run_at": "2026-10-16T23:44:27",
   "as_of": "2026-10-16",
   "calibration": {
-    "rate": 0.2657,
-    "d0": 3,
-    "s0": 2.316,
-    "s1": 0.0068,
-    "n_pairs": 28,
-    "resid_sd": 2.318,
+    "rate": 0.2642,
+    "d0": 1,
+    "s0": 2.573,
+    "s1": 0.0113,
+    "n_pairs": 64,
+    "resid_sd": 2.75,
     "fallback": false
   },
-  "season_shift": -0.63,
+  "season_shift": -0.21,
   "yoy_sd": 3.0,
   "config": {
     "season": 2026,
