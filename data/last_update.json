@@ -1,18 +1,8 @@
 {
-  "run_at": "2026-10-16T09:22:25",
-  "new_rows": 24,
-  "new_events": [
-    "Regional - 5A Metro Regional",
-    "Regional - West Regional"
-  ],
-  "new_class_rows": [
-    {
-      "school": "Palisade HS",
-      "total": 66.7,
-      "event": "Regional - West",
-      "round": "Regional"
-    }
-  ],
+  "run_at": "2026-10-16T16:21:34",
+  "new_rows": 0,
+  "new_events": [],
+  "new_class_rows": [],
   "focus": {
     "school": "Standley Lake HS",
     "latest": 65.45,
@@ -22,6 +12,6 @@
     "p_state": 1.0,
     "p_finals": 0.52125,
     "prev_p_state": 1.0,
-    "prev_p_finals": 0.5206
+    "prev_p_finals": 0.52125
   }
 }
