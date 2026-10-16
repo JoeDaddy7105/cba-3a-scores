@@ -42,7 +42,7 @@ SCRAPED_FIELDS = [
 MANIFEST_FIELDS = ["pdf_url", "season", "section", "label", "status", "rows", "event", "event_date",
                    "parser", "checked_at"]
 # bump when parsing changes; PDFs parsed by an older version get re-read on the next run
-PARSER_VERSION = "2"
+PARSER_VERSION = "3"
 # value positions in a standard CBA recap row (each value is followed by its rank):
 # Music Perf: Individual (a, b, tot), Ensemble (a, b, tot), subtotal
 # Visual Perf: Individual (a, b, tot), Ensemble (a, b, tot), subtotal
@@ -222,8 +222,12 @@ def parse_recap(pdf_bytes: bytes, aliases: dict[str, str]) -> tuple[dict, list[d
                 f"{m.group(2)} {m.group(3)} {m.group(4)}", "%B %d %Y").date().isoformat()
             if i >= 1:
                 meta["location"] = lines[i - 1]
-            if i >= 2:
-                meta["event"] = lines[i - 2]
+            # event name is the nearest line above the location that isn't page furniture
+            for j in range(i - 2, -1, -1):
+                if not re.search(r"print|back to top|secure recap|highlights|^key$|verified|missing scores",
+                                 lines[j], re.I):
+                    meta["event"] = lines[j]
+                    break
             if i + 1 < len(lines) and ROUND_RE.match(lines[i + 1]):
                 meta["round"] = lines[i + 1]
             break
@@ -265,8 +269,13 @@ def parse_recap(pdf_bytes: bytes, aliases: dict[str, str]) -> tuple[dict, list[d
     return meta, rows
 
 
-def normalize_round(meta_round: str, event: str, label: str) -> str:
+def normalize_round(meta_round: str, event: str, label: str, section: str = "") -> str:
     text = f"{event} {label}".lower()
+    sec = section.lower()
+    if "state" in sec and "state" not in text:
+        text += " state"
+    if "regional" in sec and "regional" not in text and "state" not in text:
+        text += " regional"
     r = meta_round.lower()
     if "state" in text:
         if "quarter" in text or "quarter" in r:
@@ -318,7 +327,7 @@ def scrape_season(season: int, page_url: str, force: bool = False, verbose: bool
             continue
 
         status = "parsed" if rows else ("no_rows" if meta["event_date"] else "no_text")
-        rnd = normalize_round(meta["round"], meta["event"], link["label"])
+        rnd = normalize_round(meta["round"], meta["event"], link["label"], link["section"])
         added = 0
         for r in rows:
             cls, src = r["row_class"], "recap row"
