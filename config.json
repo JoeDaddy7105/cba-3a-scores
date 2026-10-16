@@ -29,5 +29,9 @@
   "_notes": "2026 CBA classification: 3A has 13 bands, 10 qualify for State, 4 in finals. Rules 5.03/5.05 say qualifiers are picked from regional scores, and 2024-25 results match a statewide top-N by regional score, so qualifying_mode='statewide'. Set it to 'by_region' to use state_spots_by_region instead.",
   "notify": {
     "dashboard_url": "https://joedaddy7105.github.io/cba-3a-scores/"
-  }
+  },
+  "history_seasons": [
+    2025,
+    2024
+  ]
 }

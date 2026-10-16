@@ -77,7 +77,10 @@ def main():
     old_proj = pd.read_csv(DATA / "projections.csv") if (DATA / "projections.csv").exists() else pd.DataFrame()
 
     if not a.offline:
-        seasons = [cfg["season"]] + ([cfg["season"] - 1, cfg["season"] - 2] if a.history else [])
+        # past seasons are listed every run but only downloaded once (the manifest remembers them)
+        seasons = [cfg["season"]] + list(cfg.get("history_seasons", [])) + \
+                  ([cfg["season"] - 1, cfg["season"] - 2] if a.history else [])
+        seasons = list(dict.fromkeys(seasons))
         for s in seasons:
             url = cfg["score_pages"].get(str(s))
             if url:

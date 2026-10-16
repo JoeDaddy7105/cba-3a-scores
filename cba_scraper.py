@@ -31,13 +31,25 @@ SCRAPED = DATA / "scraped_scores.csv"
 CLASSES = DATA / "school_classes.csv"
 ALIASES = DATA / "school_aliases.csv"
 
+CURRENT_SEASON = json.loads((ROOT / "config.json").read_text())["season"]
 HEADERS = {"User-Agent": "Mozilla/5.0 (score tracker for personal use)"}
 
+CAPTIONS = ["mp_ind", "mp_ens", "mp", "vp_ind", "vp_ens", "vp", "ge_me1", "ge_me2", "ge_ve", "ge", "subtotal"]
 SCRAPED_FIELDS = [
     "season", "event", "event_date", "round", "school", "class", "class_source",
-    "total", "penalty", "section", "source_label", "pdf_url", "scraped_at",
+    "total", "penalty", *CAPTIONS, "section", "source_label", "pdf_url", "scraped_at",
 ]
-MANIFEST_FIELDS = ["pdf_url", "season", "section", "label", "status", "rows", "event", "event_date", "checked_at"]
+MANIFEST_FIELDS = ["pdf_url", "season", "section", "label", "status", "rows", "event", "event_date",
+                   "parser", "checked_at"]
+# bump when parsing changes; PDFs parsed by an older version get re-read on the next run
+PARSER_VERSION = "2"
+# value positions in a standard CBA recap row (each value is followed by its rank):
+# Music Perf: Individual (a, b, tot), Ensemble (a, b, tot), subtotal
+# Visual Perf: Individual (a, b, tot), Ensemble (a, b, tot), subtotal
+# General Effect: Music Effect 1 (a, b, tot), Music Effect 2 (a, b, tot), Visual Effect (a, b, tot), subtotal
+# then the score before penalties
+CAPTION_POS = {"mp_ind": 2, "mp_ens": 5, "mp": 6, "vp_ind": 9, "vp_ens": 12, "vp": 13,
+               "ge_me1": 16, "ge_me2": 19, "ge_ve": 22, "ge": 23, "subtotal": 24}
 
 MONTHS = "January|February|March|April|May|June|July|August|September|October|November|December"
 DATE_RE = re.compile(rf"(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day,?\s+({MONTHS})\s+(\d{{1,2}}),?\s+(\d{{4}})", re.I)
@@ -182,7 +194,22 @@ def parse_block(text: str) -> dict | None:
     if not 15 <= total <= 100:
         return None
     cls = re.findall(r"\b([1-5]A)\b", tail) or re.findall(r"\b([1-5]A)\b", text)
-    return {"total": total, "penalty": penalty, "row_class": cls[-1] if cls else ""}
+    out = {"total": total, "penalty": penalty, "row_class": cls[-1] if cls else ""}
+    out.update(parse_captions(text[:last.start()]))
+    return out
+
+
+def parse_captions(text: str) -> dict:
+    """Caption subtotals from the numbers before the penalty columns. Returns {} unless the
+    music, visual and general effect subtotals add up to the pre-penalty score."""
+    nums = [float(t) for t in text.split() if NUM_TOKEN_RE.match(t)]
+    for vals in (nums[0::2], nums):          # with ranks after each value, or without
+        if len(vals) != 25:
+            continue
+        cap = {k: vals[i] for k, i in CAPTION_POS.items()}
+        if abs(cap["mp"] + cap["vp"] + cap["ge"] - cap["subtotal"]) <= 0.06:
+            return cap
+    return {}
 
 
 def parse_recap(pdf_bytes: bytes, aliases: dict[str, str]) -> tuple[dict, list[dict]]:
@@ -269,10 +296,16 @@ def scrape_season(season: int, page_url: str, force: bool = False, verbose: bool
         print(f"[{season}] {len(links)} recap PDFs listed on {page_url}")
     new_rows, now = [], dt.datetime.now().isoformat(timespec="seconds")
 
-    for link in links:
+    def done(url):
+        m = manifest.get(url, {})
+        return m.get("status") in {"parsed", "no_text", "no_rows"} and m.get("parser") == PARSER_VERSION
+    todo = [l for l in links if force or not done(l["pdf_url"])]
+    redo = {l["pdf_url"] for l in todo}
+    existing = [r for r in existing if r["pdf_url"] not in redo]   # re-read rows replace old ones
+    have = {(r["event_date"], r["round"], r["school"]) for r in existing}
+
+    for link in todo:
         url = link["pdf_url"]
-        if not force and manifest.get(url, {}).get("status") in {"parsed", "no_text", "no_rows"}:
-            continue
         cache = PDF_CACHE / (hashlib.md5(url.encode()).hexdigest() + ".pdf")
         try:
             if not cache.exists():
@@ -293,6 +326,8 @@ def scrape_season(season: int, page_url: str, force: bool = False, verbose: bool
                 cls, src = r["section_class"], "recap section"
             if not cls and r["school"] in class_table:
                 cls, src = class_table[r["school"]]["class"], "lookup table"
+                if season != CURRENT_SEASON:
+                    src = f"lookup table ({CURRENT_SEASON} class)"
             if not cls:
                 cls, src = "Unknown", ""
             key = (meta["event_date"], rnd, r["school"])
@@ -304,6 +339,7 @@ def scrape_season(season: int, page_url: str, force: bool = False, verbose: bool
                 "event_date": meta["event_date"], "round": rnd, "school": r["school"],
                 "class": cls, "class_source": src, "total": f"{r['total']:.3f}",
                 "penalty": "" if r["penalty"] is None else f"{r['penalty']:.2f}",
+                **{k: (f"{r[k]:.3f}" if k in r else "") for k in CAPTIONS},
                 "section": link["section"], "source_label": link["label"],
                 "pdf_url": url, "scraped_at": now,
             })
@@ -312,7 +348,7 @@ def scrape_season(season: int, page_url: str, force: bool = False, verbose: bool
             if src.startswith("recap") and r["school"] not in class_table:
                 class_table[r["school"]] = {"school": r["school"], "class": cls, "region": "", "note": "learned from recap; not on CBA classification list"}
         manifest[url] = {**link, "status": status, "rows": added, "event": meta["event"],
-                         "event_date": meta["event_date"], "checked_at": now}
+                         "event_date": meta["event_date"], "parser": PARSER_VERSION, "checked_at": now}
         if verbose:
             flag = "" if rows else f"  <-- {status}: add these scores to data/manual_scores.csv"
             print(f"  {link['label'][:40]:40s} {meta['event_date'] or '?':10s} {rnd:17s} {added:3d} rows{flag}")
