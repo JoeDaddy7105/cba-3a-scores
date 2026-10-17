@@ -1,20 +1,20 @@
 panel,effect,effect_sd,event_date,event,round,n_bands,n_class_bands
-2026-09-19|Legend Marching Festival|Prelims,0.161415263561139,0.6105142926561674,2026-09-19,Legend Marching Festival,Prelims,23,4
-2026-09-26|Colorado West Festival|Finals,-0.2933577029579624,0.9439391357784271,2026-09-26,Colorado West Festival,Finals,11,1
-2026-09-26|Colorado West Festival|Prelims,-0.3491399923850622,0.9412031558413368,2026-09-26,Colorado West Festival,Prelims,12,1
-2026-09-26|Legacy Marching Festival|Finals,-2.0786972610125645,0.6720549281823399,2026-09-26,Legacy Marching Festival,Finals,12,0
-2026-09-26|Legacy Marching Festival|Prelims,-3.205007739982449,0.5852327213373927,2026-09-26,Legacy Marching Festival,Prelims,25,2
-2026-10-03|DCMI Marching Festival|Finals,0.46106397894669726,0.6717654500287112,2026-10-03,DCMI Marching Festival,Finals,11,1
-2026-10-03|DCMI Marching Festival|Prelims,-0.5459345147456531,0.62668362893335,2026-10-03,DCMI Marching Festival,Prelims,17,1
-2026-10-03|Lakewood Marching Festival|Finals,0.41149789487170096,0.6585350704938131,2026-10-03,Lakewood Marching Festival,Finals,12,3
-2026-10-03|Lakewood Marching Festival|Prelims,0.3871205409030267,0.6038690971192826,2026-10-03,Lakewood Marching Festival,Prelims,21,4
-2026-10-10|Harrison Marching Festival|Finals,2.264698953952376,0.6532067230147353,2026-10-10,Harrison Marching Festival,Finals,13,1
-2026-10-10|Harrison Marching Festival|Prelims,1.7467660612427096,0.6236910954953991,2026-10-10,Harrison Marching Festival,Prelims,19,2
-2026-10-10|Monarch Marching Festival|Prelims,-0.12403063221509569,0.6264354739467507,2026-10-10,Monarch Marching Festival,Prelims,17,1
-2026-10-12|Regional - North 1A-2A-3A|Regional,0.43395639070317316,0.9895083015742303,2026-10-12,Regional - North 1A-2A-3A,Regional,8,1
-2026-10-12|Regional - North 4A-5A|Regional,1.7175535208754127,0.6895965140445551,2026-10-12,Regional - North 4A-5A,Regional,12,0
-2026-10-13|Regional - 2A-4A Metro|Regional,1.0046135038815294,0.66805917531339,2026-10-13,Regional - 2A-4A Metro,Regional,16,6
-2026-10-14|Regional - South 1A-2A-3A|Regional,-1.398599637651074,0.733470003869446,2026-10-14,Regional - South 1A-2A-3A,Regional,15,5
-2026-10-14|Regional - South 4A-5A|Regional,0.6241417810060739,0.6585173844938825,2026-10-14,Regional - South 4A-5A,Regional,13,0
-2026-10-15|Regional - 5A Metro|Regional,-1.013530935380345,0.6794536183309874,2026-10-15,Regional - 5A Metro,Regional,12,0
-2026-10-15|Regional - West|Regional,-0.15317227699244995,0.9953623086429226,2026-10-15,Regional - West,Regional,12,1
+2026-09-19|Legend Marching Festival|Prelims,0.16141526356119584,0.6105142926561683,2026-09-19,Legend Marching Festival,Prelims,23,4
+2026-09-26|Colorado West Festival|Finals,-0.2933577029580192,0.9439391357784297,2026-09-26,Colorado West Festival,Finals,11,1
+2026-09-26|Colorado West Festival|Prelims,-0.349139992384778,0.9412031558413397,2026-09-26,Colorado West Festival,Prelims,12,1
+2026-09-26|Legacy Marching Festival|Finals,-2.078697261012536,0.6720549281823408,2026-09-26,Legacy Marching Festival,Finals,12,0
+2026-09-26|Legacy Marching Festival|Prelims,-3.205007739982335,0.5852327213373931,2026-09-26,Legacy Marching Festival,Prelims,25,2
+2026-10-03|DCMI Marching Festival|Finals,0.4610639789463846,0.6717654500287119,2026-10-03,DCMI Marching Festival,Finals,11,1
+2026-10-03|DCMI Marching Festival|Prelims,-0.5459345147456816,0.6266836289333506,2026-10-03,DCMI Marching Festival,Prelims,17,1
+2026-10-03|Lakewood Marching Festival|Finals,0.4114978948720136,0.658535070493814,2026-10-03,Lakewood Marching Festival,Finals,12,3
+2026-10-03|Lakewood Marching Festival|Prelims,0.3871205409032257,0.6038690971192835,2026-10-03,Lakewood Marching Festival,Prelims,21,4
+2026-10-10|Harrison Marching Festival|Finals,2.264698953952063,0.6532067230147363,2026-10-10,Harrison Marching Festival,Finals,13,1
+2026-10-10|Harrison Marching Festival|Prelims,1.746766061242397,0.6236910954953999,2026-10-10,Harrison Marching Festival,Prelims,19,2
+2026-10-10|Monarch Marching Festival|Prelims,-0.12403063221532307,0.6264354739467513,2026-10-10,Monarch Marching Festival,Prelims,17,1
+2026-10-12|Regional - North 1A-2A-3A|Regional,0.4339563907028321,0.9895083015742319,2026-10-12,Regional - North 1A-2A-3A,Regional,8,1
+2026-10-12|Regional - North 4A-5A|Regional,1.717553520875299,0.6895965140445559,2026-10-12,Regional - North 4A-5A,Regional,12,0
+2026-10-13|Regional - 2A-4A Metro|Regional,1.0046135038813304,0.6680591753133908,2026-10-13,Regional - 2A-4A Metro,Regional,16,6
+2026-10-14|Regional - South 1A-2A-3A|Regional,-1.398599637651074,0.7334700038694469,2026-10-14,Regional - South 1A-2A-3A,Regional,15,5
+2026-10-14|Regional - South 4A-5A|Regional,0.6241417810057328,0.6585173844938835,2026-10-14,Regional - South 4A-5A,Regional,13,0
+2026-10-15|Regional - 5A Metro|Regional,-1.0135309353802313,0.6794536183309882,2026-10-15,Regional - 5A Metro,Regional,12,0
+2026-10-15|Regional - West|Regional,-0.15317227699222258,0.9953623086429255,2026-10-15,Regional - West,Regional,12,1
